@@ -13,7 +13,9 @@
                     />
                 </div>
                 <div>
-                    <h4 class="p-mb-1">{{ product.name }}</h4>
+                    <h4 class="p-mb-1">
+                        {{ product.name }}
+                    </h4>
                     <h6 class="p-mt-0 p-mb-3">${{ product.price }}</h6>
                     <span
                         :class="
@@ -24,9 +26,9 @@
                     >
                     <div class="car-buttons p-mt-5">
                         <Button
-                            @click="addProductToList(product)"
                             icon="pi pi-shopping-cart"
                             class="p-button-success p-button-rounded p-mr-2"
+                            @click="addProductToList(product)"
                         />
                     </div>
                 </div>
@@ -34,8 +36,8 @@
         </div>
 
         <Dialog
-            header="Header"
             v-model:visible="displayBasic"
+            header="Header"
             :style="{ width: '50vw' }"
         >
             <p>
@@ -51,14 +53,14 @@
                 <Button
                     label="No"
                     icon="pi pi-times"
-                    @click="closeBasic"
                     class="p-button-text"
+                    @click="closeBasic"
                 />
                 <Button
                     label="Yes"
                     icon="pi pi-check"
-                    @click="closeBasic"
                     autofocus
+                    @click="closeBasic"
                 />
             </template>
         </Dialog>
@@ -66,8 +68,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { onMounted, ref } from 'vue'
 import useCart from '../../store/Cart'
 import ProductService from '../../services/ProductService'
 import uiState from '../../store/uiState'
@@ -83,12 +84,7 @@ export default {
         const productService = ref(new ProductService())
 
         const { addProductToShoppingList } = useCart
-        const {
-            isLoginModalOpen,
-            toggleLoginModal,
-            toggleCartSidebar,
-            isCartSidebarOpen,
-        } = uiState
+        const { toggleCartSidebar, isCartSidebarOpen } = uiState
 
         const addProductToList = (product) => {
             addProductToShoppingList(product)

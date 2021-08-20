@@ -1,5 +1,5 @@
 <template>
-    <Sidebar v-model:visible="state.isCartSidebarOpen" :baseZIndex="1000">
+    <Sidebar v-model:visible="state.isCartSidebarOpen" :base-z-index="1000">
         <div v-for="product in cartList" :key="product.id" class="product-item">
             <div class="product-item-content">
                 <div class="p-mb-3">
@@ -10,7 +10,9 @@
                     />
                 </div>
                 <div>
-                    <h4 class="p-mb-1">{{ product.name }}</h4>
+                    <h4 class="p-mb-1">
+                        {{ product.name }}
+                    </h4>
                     <h6 class="p-mt-0 p-mb-3">${{ product.price }}</h6>
                     <span
                         :class="
@@ -33,17 +35,19 @@
             <p>Summe:</p>
             {{ cartSumPrice }}
         </div>
-        <Button> <router-link to="/checkout">Checkout</router-link></Button>
+        <Button>
+            <router-link to="/checkout"> Checkout </router-link>
+        </Button>
     </Sidebar>
     <div class="card">
         <Carousel
             :value="products"
-            :numVisible="3"
-            :numScroll="1"
-            :responsiveOptions="responsiveOptions"
+            :num-visible="3"
+            :num-scroll="1"
+            :responsive-options="responsiveOptions"
             class="custom-carousel"
             :circular="true"
-            :autoplayInterval="6000"
+            :autoplay-interval="6000"
         >
             <template #item="slotProps">
                 <div class="product-item">
@@ -56,7 +60,9 @@
                             />
                         </div>
                         <div>
-                            <h4 class="p-mb-1">{{ slotProps.data.name }}</h4>
+                            <h4 class="p-mb-1">
+                                {{ slotProps.data.name }}
+                            </h4>
                             <h6 class="p-mt-0 p-mb-3">
                                 ${{ slotProps.data.price }}
                             </h6>
@@ -85,7 +91,6 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
 import ProductService from '../../services/ProductService'
 import uiState from '../../store/uiState'
 import Cart from '../../store/Cart'

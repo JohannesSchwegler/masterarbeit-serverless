@@ -9,7 +9,9 @@
                 />
             </div>
             <div>
-                <h4 class="p-mb-1">{{ product.name }}</h4>
+                <h4 class="p-mb-1">
+                    {{ product.name }}
+                </h4>
                 <h6 class="p-mt-0 p-mb-3">${{ product.price }}</h6>
                 <span
                     :class="
@@ -20,9 +22,9 @@
                 >
                 <div class="car-buttons p-mt-5">
                     <Button
-                        @click="onProductClick"
                         icon="pi pi-shopping-cart"
                         class="p-button-success p-button-rounded p-mr-2"
+                        @click="onProductClick"
                     />
                 </div>
             </div>
@@ -30,20 +32,21 @@
     </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { Product } from '../store/Cart'
+export default defineComponent({
     props: {
         product: {
-            default: {},
+            type: Object,
         },
     },
-    methods() {
-        onProductClick(product)
-        {
+    methods: {
+        onProductClick(product: Product): void {
             this.$emit('product-clicked', product)
-        }
+        },
     },
-}
+})
 </script>
 
 <style scoped></style>

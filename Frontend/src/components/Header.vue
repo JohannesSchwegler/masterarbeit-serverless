@@ -10,9 +10,9 @@
         </template>
         <template #end>
             <Avatar
-                @click="toggleCartSidebar"
-                icon="pi pi-shopping-cart"
                 v-badge="productsInCart"
+                icon="pi pi-shopping-cart"
+                @click="toggleCartSidebar"
             />
             <InputText placeholder="Search" type="text" />
         </template>
@@ -20,7 +20,6 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue'
 import uiState from '../store/uiState'
 import Cart from '../store/Cart'
 

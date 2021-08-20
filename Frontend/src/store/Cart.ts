@@ -1,4 +1,4 @@
-import { reactive, computed } from 'vue'
+import { computed, reactive } from 'vue'
 
 enum inventoryStatus {
     instock = 'INSTOCK',
@@ -6,7 +6,7 @@ enum inventoryStatus {
     outofstock = 'OUTOFSTOCK',
 }
 
-interface Product {
+export interface Product {
     id: string
     code: string
     name: string
@@ -31,8 +31,8 @@ const cartList = computed(() => state.products)
 const productsInCart = computed(() => state.products.length)
 const cartSumPrice = computed(() => {
     const pricesArray = state.products.map((product) => product.price)
-    pricesArray.length > 0
-        ? pricesArray.reduce((acc: number = 0, price) => {
+    return pricesArray.length > 0
+        ? pricesArray.reduce((acc = 0, price) => {
               return acc + price
           })
         : 0

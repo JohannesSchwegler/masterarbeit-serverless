@@ -8,7 +8,7 @@
                 <div class="p-col-12">
                     <div class="p-inputgroup">
                         <span class="p-inputgroup-addon">
-                            <i class="pi pi-user"></i>
+                            <i class="pi pi-user" />
                         </span>
                         <InputText
                             v-model="usernumber"
