@@ -1,0 +1,45 @@
+{
+  "name": "serverless",
+  "version": "1.0.0",
+  "description": "Serverless aws-nodejs-typescript template",
+  "main": "serverless.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "hello": "serverless invoke local -f hello --path src/actions/hello/mock.json",
+    "lint": "eslint --ext .ts,.js --ignore-path .gitignore . --fix",
+    "format": "prettier -w -u ."
+  },
+  "engines": {
+    "node": ">=14.15.0"
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "@middy/http-error-handler": "^2.5.1",
+    "@middy/http-event-normalizer": "^2.5.1",
+    "@middy/http-json-body-parser": "^1.5.2",
+    "@middy/http-response-serializer": "^2.5.1",
+    "@middy/validator": "^2.5.1",
+    "@types/uuid": "^8.3.1",
+    "aws-sdk": "^2.978.0",
+    "eslint": "^7.32.0",
+    "http-errors": "^1.8.0",
+    "prettier": "^2.3.2",
+    "uuid": "^8.3.2",
+    "validate.js": "^0.13.1"
+  },
+  "devDependencies": {
+    "@serverless/typescript": "^2.23.0",
+    "@types/aws-lambda": "^8.10.71",
+    "@types/node": "^14.14.25",
+    "json-schema-to-ts": "^1.5.0",
+    "serverless": "^2.23.0",
+    "serverless-bundle": "^5.0.0",
+    "serverless-dotenv-plugin": "^3.9.0",
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-offline": "^8.0.0",
+    "tsconfig-paths": "^3.9.0",
+    "tsconfig-paths-webpack-plugin": "^3.3.0"
+  },
+  "author": "The serverless webpack authors (https://github.com/elastic-coders/serverless-webpack)",
+  "license": "MIT"
+}
