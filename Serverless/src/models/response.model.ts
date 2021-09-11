@@ -1,8 +1,8 @@
 // Interfaces
 import {
-    IResponseBody,
-    IResponse,
-    ResponseHeader,
+  IResponseBody,
+  IResponse,
+  ResponseHeader,
 } from "../interfaces/response.interface";
 
 // Enums
@@ -10,15 +10,15 @@ import { Status } from "../enums/status.enum";
 import { StatusCode } from "../enums/status-code.enum";
 
 const RESPONSE_HEADERS: ResponseHeader = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*", // Required for CORS support to work
-    "Access-Control-Allow-Credentials": true, // Required for cookies, authorization headers with HTTPS
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+  "Access-Control-Allow-Credentials": true, // Required for cookies, authorization headers with HTTPS
 };
 
 export const STATUS_MESSAGES = {
-    [StatusCode.OK]: Status.SUCCESS,
-    [StatusCode.BAD_REQUEST]: Status.BAD_REQUEST,
-    [StatusCode.ERROR]: Status.ERROR,
+  [StatusCode.OK]: Status.SUCCESS,
+  [StatusCode.BAD_REQUEST]: Status.BAD_REQUEST,
+  [StatusCode.ERROR]: Status.ERROR,
 };
 
 /**
@@ -35,12 +35,12 @@ export default class ResponseModel {
    * @param message
    */
   constructor(data = {}, code = StatusCode.BAD_REQUEST, message = "") {
-      this.body = {
-          data: data,
-          message: message,
-          status: STATUS_MESSAGES[code],
-      };
-      this.code = code;
+    this.body = {
+      data: data,
+      message: message,
+      status: STATUS_MESSAGES[code],
+    };
+    this.code = code;
   }
 
   /**
@@ -49,7 +49,7 @@ export default class ResponseModel {
    * @param value
    */
   setBodyVariable = (variable: string, value: string): void => {
-      this.body[variable] = value;
+    this.body[variable] = value;
   };
 
   /**
@@ -57,7 +57,7 @@ export default class ResponseModel {
    * @param data
    */
   setData = (data: any): void => {
-      this.body.data = data;
+    this.body.data = data;
   };
 
   /**
@@ -65,7 +65,7 @@ export default class ResponseModel {
    * @param code
    */
   setCode = (code: number): void => {
-      this.code = code;
+    this.code = code;
   };
 
   /**
@@ -73,7 +73,7 @@ export default class ResponseModel {
    * @return {*}
    */
   getCode = (): number => {
-      return this.code;
+    return this.code;
   };
 
   /**
@@ -81,7 +81,7 @@ export default class ResponseModel {
    * @param message
    */
   setMessage = (message: string): void => {
-      this.body.message = message;
+    this.body.message = message;
   };
 
   /**
@@ -89,7 +89,7 @@ export default class ResponseModel {
    * @return {string|*}
    */
   getMessage = (): any => {
-      return this.body.message;
+    return this.body.message;
   };
 
   /**
@@ -97,10 +97,10 @@ export default class ResponseModel {
    * @return {IResponse}
    */
   generate = (): IResponse => {
-      return {
-          statusCode: this.code,
-          headers: RESPONSE_HEADERS,
-          body: JSON.stringify(this.body),
-      };
+    return {
+      statusCode: this.code,
+      headers: RESPONSE_HEADERS,
+      body: JSON.stringify(this.body),
+    };
   };
 }

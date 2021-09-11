@@ -15,18 +15,18 @@ type IGeneric<T> = {
  * @return {Promise<any>}
  */
 export const validateAgainstConstraints = (
-    values: IGeneric<string>,
-    constraints: IGeneric<Record<string, unknown>>,
+  values: IGeneric<string>,
+  constraints: IGeneric<Record<string, unknown>>,
 ) => {
-    return new Promise<void>((resolve, reject) => {
-        const validation = validate(values, constraints);
+  return new Promise<void>((resolve, reject) => {
+    const validation = validate(values, constraints);
 
-        if (typeof validation === "undefined") {
-            resolve();
-        } else {
-            reject(
-                new ResponseModel({ validation }, 400, "required fields are missing"),
-            );
-        }
-    });
+    if (typeof validation === "undefined") {
+      resolve();
+    } else {
+      reject(
+        new ResponseModel({ validation }, 400, "required fields are missing"),
+      );
+    }
+  });
 };

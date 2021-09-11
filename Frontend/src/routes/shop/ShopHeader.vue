@@ -98,9 +98,7 @@ import Cart from '../../store/Cart'
 export default {
     setup() {
         onMounted(() => {
-            products.value = productService
-                .getProductsSmall()
-                .splice(0, 9)
+            products.value = productService.getProductsSmall().splice(0, 9)
         })
         const products = ref(null)
         const productService = new ProductService()

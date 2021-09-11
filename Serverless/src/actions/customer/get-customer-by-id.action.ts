@@ -23,23 +23,19 @@ export const getCustomerHandler: APIGatewayProxyHandler = async (
   // Initialise DynamoDB PUT parameters
   const params = {
     TableName: process.env.LIST_TABLE,
-    ExpressionAttributeValues: {
-      ":pk": `CUST#${id}`,
-      ":sk": `CUST#${id}`,
+
+    Key: {
+      PK: `CUST#${id}`,
+      SK: `CUST#${id}`,
     },
-    ExpressionAttributeNames: {
-      "#pk": "PK",
-      "#sk": "SK",
-    },
-    KeyConditionExpression: "#pk = :pk AND #sk begins_with(:sk)",
   };
   // Inserts item into DynamoDB table
   return await databaseService
-    .query(params)
-    .then(({ Items }) => {
+    .get(params)
+    .then(({ Item }) => {
       // Set Success Response
       response = new ResponseModel(
-        { customers: Items },
+        { customer: Item },
         StatusCode.OK,
         ResponseMessage.GET_CUSTOMER_SUCCESS,
       );
@@ -63,4 +59,4 @@ export const getCustomerHandler: APIGatewayProxyHandler = async (
     });
 };
 
-export const getCustomerAction = getCustomerHandler;
+export const getCustomerByIdAction = getCustomerHandler;

@@ -12,6 +12,7 @@ import 'primevue/resources/primevue.min.css'
 import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.css'
 import Carousel from 'primevue/carousel'
+import Card from 'primevue/card'
 import Sidebar from 'primevue/sidebar'
 import Dialog from 'primevue/dialog'
 import Avatar from 'primevue/avatar'
@@ -20,23 +21,10 @@ import Toast from 'primevue/toast'
 import AvatarGroup from 'primevue/avatargroup'
 import BadgeDirective from 'primevue/badgedirective'
 import Badge from 'primevue/badge'
-import { createRouter, createWebHistory } from 'vue-router'
-import Checkout from './routes/checkout/Checkout.vue'
-import Shop from './routes/shop/Shop.vue'
-
-const routes = [
-    { path: '/', component: Shop },
-    { path: '/checkout', component: Checkout },
-]
-
-const router = createRouter({
-    // 4. Provide the history implementation to use. We are using the hash history for simplicity here.
-    history: createWebHistory(),
-    routes, // short for `routes: routes`
-})
+import Router from './router'
 
 const app = createApp(App)
-app.use(router)
+app.use(Router)
 app.use(Vuex)
 app.use(PrimeVue)
 
@@ -52,5 +40,5 @@ app.component('Avatar', Avatar)
 app.component('Badge', Badge)
 app.component('AvatarGroup', AvatarGroup)
 app.component('Toast', Toast)
-
+app.component('Card', Card)
 app.mount('#app')

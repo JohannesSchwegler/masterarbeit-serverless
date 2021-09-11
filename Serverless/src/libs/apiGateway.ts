@@ -1,7 +1,7 @@
 import type {
-    APIGatewayProxyEvent,
-    APIGatewayProxyResult,
-    Handler,
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Handler,
 } from "aws-lambda";
 import type { FromSchema } from "json-schema-to-ts";
 
@@ -14,8 +14,8 @@ export type ValidatedEventAPIGatewayProxyEvent<S> = Handler<
 >;
 
 export const formatJSONResponse = (response: Record<string, unknown>) => {
-    return {
-        statusCode: 200,
-        body: JSON.stringify(response),
-    };
+  return {
+    statusCode: 200,
+    body: JSON.stringify(response),
+  };
 };

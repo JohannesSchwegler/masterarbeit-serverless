@@ -6,6 +6,8 @@ interface IProps {
   name: string;
   surname: string;
   age: number;
+  city?: string;
+  email?: string;
 }
 
 export default class CustomerModel {
@@ -13,12 +15,23 @@ export default class CustomerModel {
   private _name: string;
   private _surname: string;
   private _age: number;
+  private _city: string;
+  private _email: string;
 
-  constructor({ id = UUID(), name = "", surname = "", age = 1 }: IProps) {
-      this._id = id;
-      this._name = name;
-      this._surname = surname;
-      this._age = age;
+  constructor({
+    id = UUID(),
+    name = "",
+    surname = "",
+    age = null,
+    city = null,
+    email = null,
+  }: IProps) {
+    this._id = id;
+    this._name = name;
+    this._surname = surname;
+    this._age = age;
+    this._city = city;
+    this._email = email;
   }
 
   /**
@@ -26,7 +39,7 @@ export default class CustomerModel {
    * @param value
    */
   setId(value: string) {
-      this._id = value !== "" ? value : null;
+    this._id = value !== "" ? value : null;
   }
 
   /**
@@ -34,7 +47,7 @@ export default class CustomerModel {
    * @return {string|*}
    */
   getId() {
-      return this._id;
+    return this._id;
   }
 
   /**
@@ -42,7 +55,7 @@ export default class CustomerModel {
    * @param value
    */
   setName(value: string) {
-      this._name = value !== "" ? value : null;
+    this._name = value !== "" ? value : null;
   }
 
   /**
@@ -50,7 +63,7 @@ export default class CustomerModel {
    * @return {string|*}
    */
   getName() {
-      return this._name;
+    return this._name;
   }
 
   /**
@@ -58,7 +71,7 @@ export default class CustomerModel {
    * @return {string|*}
    */
   getSurname() {
-      return this._surname;
+    return this._surname;
   }
 
   /**
@@ -66,7 +79,23 @@ export default class CustomerModel {
    * @return {number|*}
    */
   getAge() {
-      return this._age;
+    return this._age;
+  }
+
+  /**
+   * Get City
+   * @return {string|*}
+   */
+  getCity() {
+    return this._city;
+  }
+
+  /**
+   * Get Email
+   * @return {string|*}
+   */
+  getEmail() {
+    return this._email;
   }
 
   /**
@@ -74,11 +103,13 @@ export default class CustomerModel {
    * @return {IListInterface}
    */
   getEntityMappings(): IProps {
-      return {
-          id: this.getId(),
-          name: this.getName(),
-          surname: this.getSurname(),
-          age: this.getAge(),
-      };
+    return {
+      id: this.getId(),
+      name: this.getName(),
+      surname: this.getSurname(),
+      age: this.getAge(),
+      city: this.getCity(),
+      email: this.getEmail(),
+    };
   }
 }
