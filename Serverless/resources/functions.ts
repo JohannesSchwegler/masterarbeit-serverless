@@ -1,29 +1,40 @@
-import schema from "../src/actions/hello/schema";
-
 export default {
-  hello: {
-    handler: "handler.hello",
-    events: [
-      {
-        http: {
-          method: "get",
-          path: "hello",
-          request: {
-            schema: {
-              "application/json": schema,
-            },
-          },
-        },
-      },
-    ],
-  },
-  createCustomer: {
-    handler: "handler.createCustomerAction",
+  createMaterial: {
+    handler: "handler.createMaterialAction",
     events: [
       {
         http: {
           method: "post",
-          path: "customer/create",
+          path: "material",
+        },
+      },
+    ],
+  },
+  getMaterial: {
+    handler: "handler.getMaterialAction",
+    events: [
+      {
+        http: {
+          method: "get",
+          path: "material",
+        },
+      },
+    ],
+  },
+  getMaterialById: {
+    handler: "handler.getMaterialByIdAction",
+    events: [
+      {
+        http: {
+          method: "get",
+          path: "material/{id}",
+          request: {
+            parameters: {
+              paths: {
+                id: true,
+              },
+            },
+          },
         },
       },
     ],

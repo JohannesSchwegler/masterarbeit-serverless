@@ -1,18 +1,18 @@
 <template>
     <div :class="$style.erp">
         <div :class="$style.erp__container">
-            <ErpSection> test </ErpSection>
+            <ERPSection> </ERPSection>
         </div>
     </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import ErpSection from './ErpSection.vue'
+import ERPSection from './ErpSection.vue'
 
 export default defineComponent({
     components: {
-        ErpSection,
+        ERPSection,
     },
     setup() {
         const services = ref([

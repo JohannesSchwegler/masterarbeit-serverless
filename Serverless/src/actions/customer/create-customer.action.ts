@@ -11,6 +11,7 @@ import { StatusCode } from "../../enums/status-code.enum";
 import { ResponseMessage } from "../../enums/response-message.enum";
 import ResponseModel from "src/models/response.model";
 import databaseService from "src/services/database.service";
+import * as AWS from "aws-sdk";
 
 export const createCustomerHandler: APIGatewayProxyHandler = async (
   event,
@@ -33,38 +34,44 @@ export const createCustomerHandler: APIGatewayProxyHandler = async (
 
       // Initialise DynamoDB PUT parameters
 
+      const documentClient = new AWS.DynamoDB.DocumentClient();
+
       // Make a batchWrite-Operation to check if user already exists and then add user to
       // the set of user-ids. For more details refer to the access patterns for the user
       const params = {
-        RequestItems: {
-          [process.env.LIST_TABLE]: [
-            {
-              PutRequest: {
-                Item: {
-                  PK: `CUST#${customer.id}`,
-                  SK: `CUST#${customer.id}`,
-                  age: customer.age,
-                  city: customer.city,
-                  email: customer.email,
-                },
+        TransactItems: [
+          {
+            Put: {
+              TableName: process.env.LIST_TABLE,
+              Item: {
+                PK: `CUST#${customer.id}`,
+                SK: `CUST#${customer.id}`,
+                age: customer.age,
+                city: customer.city,
+                email: customer.email,
               },
             },
-            {
-              UpdateRequest: {
-                Item: {
-                  PK: `CUSTOMERS`,
-                  SK: `CUSTOMERS`,
-                  CUSTOMERS: [customer.id],
-                },
+          },
+          {
+            Update: {
+              TableName: process.env.LIST_TABLE,
+              Key: {
+                PK: `CUSTOMERS`,
+                SK: `CUSTOMERS`,
               },
+              UpdateExpression: "ADD Customers :customers",
+              ExpressionAttributeValues: {
+                ":customers": documentClient.createSet([customer.id]),
+              },
+              ReturnValues: "UPDATED_NEW",
             },
-          ],
-        },
+          },
+        ],
       };
 
       // Inserts item into DynamoDB table
       //https://stackoverflow.com/questions/42103263/aws-dynamodb-how-to-achieve-in-1-call-add-value-to-set-if-set-exists-or-el
-      await databaseService.batch_write_items(params);
+      await databaseService.transact_write_items(params);
 
       return customer.id;
     })

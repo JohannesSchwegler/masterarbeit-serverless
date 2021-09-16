@@ -1,7 +1,15 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import eslintPlugin from 'vite-plugin-eslint'
+
+import { resolve } from 'path'
 
 export default defineConfig({
-    plugins: [vue(), eslintPlugin()],
+    resolve: {
+        alias: {
+            // The import of the module is relative by default,
+            // but you want to set an alias to always refer to the same root.
+            '@': resolve(__dirname, 'src'),
+        },
+    },
+    plugins: [vue()],
 })

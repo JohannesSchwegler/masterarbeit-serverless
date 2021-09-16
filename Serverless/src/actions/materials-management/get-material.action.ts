@@ -9,25 +9,30 @@ import { ResponseMessage } from "../../enums/response-message.enum";
 import ResponseModel from "src/models/response.model";
 import databaseService from "src/services/database.service";
 
-export const getCustomerHandler: APIGatewayProxyHandler =
+export const getMaterialHandler: APIGatewayProxyHandler =
   async (): Promise<APIGatewayProxyResult> => {
     let response;
 
     // Initialise DynamoDB PUT parameters
     const params = {
       TableName: process.env.LIST_TABLE,
-      Key: {
-        PK: "CUSTOMERS",
-        SK: "CUSTOMERS",
+      KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :sk)",
+      ExpressionAttributeValues: {
+        ":pk": "MATERIAL",
+        ":sk": "MAT",
+      },
+      ExpressionAttributeNames: {
+        "#pk": "PK",
+        "#sk": "SK",
       },
     };
     // Inserts item into DynamoDB table
     return await databaseService
-      .get(params)
-      .then(({ Item }) => {
+      .query(params)
+      .then(({ Items }) => {
         // Set Success Response
         response = new ResponseModel(
-          { customers: Item.Customers },
+          { materials: Items },
           StatusCode.OK,
           ResponseMessage.GET_CUSTOMER_SUCCESS,
         );
@@ -49,4 +54,4 @@ export const getCustomerHandler: APIGatewayProxyHandler =
       });
   };
 
-export const getCustomerAction = getCustomerHandler;
+export const getMaterialAction = getMaterialHandler;

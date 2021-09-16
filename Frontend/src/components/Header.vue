@@ -1,12 +1,12 @@
 <template>
     <Menubar>
         <template #start>
-            <img
-                alt="logo"
-                src="https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png"
-                height="40"
-                class="p-mr-2"
-            />
+           <router-link to="/"> <img
+               alt="logo"
+               src="https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png"
+               height="40"
+               class="p-mr-2"
+           /></router-link>
         </template>
         <template #end>
             <Avatar
