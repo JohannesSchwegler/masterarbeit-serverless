@@ -41,12 +41,17 @@ const serverlessConfiguration: AWS = {
         presets: ["env"],
       },
     },
+    [" serverless-offline-sns:"]: {
+      port: 4002,
+      debug: false,
+    },
   },
   plugins: [
     "serverless-bundle",
     "serverless-offline",
     "serverless-dotenv-plugin",
     "serverless-dynamodb-local",
+    "serverless-offline-sns",
   ],
   package: {
     individually: true,

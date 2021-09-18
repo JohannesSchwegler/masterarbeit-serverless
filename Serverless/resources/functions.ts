@@ -1,4 +1,15 @@
 export default {
+  createOrder: {
+    handler: "handler.createOrderAction",
+    events: [
+      {
+        http: {
+          method: "post",
+          path: "order",
+        },
+      },
+    ],
+  },
   createMaterial: {
     handler: "handler.createMaterialAction",
     events: [
