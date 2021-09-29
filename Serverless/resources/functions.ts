@@ -1,4 +1,12 @@
 export default {
+  orderTopic: {
+    handler: "handler.orderTopicToMaterialsAction",
+    events: [
+      {
+        sns: "create-order-topic",
+      },
+    ],
+  },
   createOrder: {
     handler: "handler.createOrderAction",
     events: [
@@ -46,6 +54,17 @@ export default {
               },
             },
           },
+        },
+      },
+    ],
+  },
+  createCustomer: {
+    handler: "handler.createCustomerAction",
+    events: [
+      {
+        http: {
+          method: "post",
+          path: "customer",
         },
       },
     ],

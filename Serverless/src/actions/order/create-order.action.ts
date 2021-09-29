@@ -56,8 +56,8 @@ export const createOrderHandler: APIGatewayProxyHandler = async (
       sns.publish(
         {
           Message: "hello!",
-          MessageStructure: "json",
-          TopicArn: "arn:aws:sns:us-east-1:123456789012:test-topic",
+
+          TopicArn: `arn:aws:sns:${process.env.region}:${process.env.accountId}:create-order-topic`,
         },
         () => {
           console.log("ping");

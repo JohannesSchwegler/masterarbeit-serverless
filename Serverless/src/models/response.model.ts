@@ -97,6 +97,7 @@ export default class ResponseModel {
    * @return {IResponse}
    */
   generate = (): IResponse => {
+    console.log("body", this.body);
     return {
       statusCode: this.code,
       headers: RESPONSE_HEADERS,
