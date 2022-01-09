@@ -43,7 +43,7 @@ const serverlessConfiguration: AWS = {
     },
     [" serverless-offline-sns:"]: {
       port: 4002,
-      debug: false,
+      debug: true,
     },
   },
   plugins: [

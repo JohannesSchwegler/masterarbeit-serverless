@@ -1,60 +1,73 @@
 <template>
-    <div :class="$style.erp">
-        <div :class="$style.erp__container">
-            <ErpSection>
-                <h1>Customers</h1>
-                {{response}}{{customers}}
-
-<!--                <DataTable :value="customers" responsiveLayout="scroll">-->
-<!--                    <Column field="id" header="Code"></Column>-->
-
-<!--                </DataTable>-->
-            </ErpSection>
-        </div>
-    </div>
+    <table
+        v-if="response.data"
+        class="table card-table table-vcenter text-nowrap datatable"
+    >
+        <thead>
+            <tr>
+                <th>PK</th>
+                <th>SK</th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Age</th>
+                <th>City</th>
+                <th>E-Mail</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="customer in response.data.customers" :key="customer.pk">
+                <td>
+                    {{ customer.PK }}
+                </td>
+                <td>{{ customer.SK.slice(0, 5) }} ...</td>
+                <td>
+                    {{ customer.id }}
+                </td>
+                <td>
+                    {{ customer.name }}
+                </td>
+                <td>
+                    {{ customer.surname }}
+                </td>
+                <td>
+                    {{ customer.age }}
+                </td>
+                <td>
+                    {{ customer.city }}
+                </td>
+                <td>
+                    {{ customer.email }}
+                </td>
+            </tr>
+            <tr v-if="!response.data.customers.length">
+                Keine Daten vorhanden
+            </tr>
+        </tbody>
+    </table>
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, onMounted, ref, watch} from 'vue'
+import { computed, defineComponent, onMounted, ref, watch } from 'vue'
 import ErpSection from '@/routes/erp/ErpSection.vue'
 import useFetch from '@/shared/composables/useFetch'
 
 interface Pokemon {
-    url: string,
+    url: string
     name: string
 }
 
 export default defineComponent({
-    components: {ErpSection},
+    components: { ErpSection },
     setup() {
+        const response = useFetch<any[]>('http://localhost:3000/dev/customer')
 
-        const response = useFetch<any[]>("http://localhost:3000/dev/customer")
-
-        const customers = computed(()=> response.data)
-        watch((response) => {
-            console.log("watched")
-        })
-
-
-
-        return {customers, response}
-    }
-
+        return { response }
+    },
 })
 </script>
 
-<style
-    module
-    lang="scss"
->
+<style module lang="scss">
 .erp {
-    padding: 5rem 0;
-    background: #edeef7;
-    min-height: 100vh;
-
-    &__container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
 }
 </style>

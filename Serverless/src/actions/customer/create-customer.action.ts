@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
 // Models
-import { createCustomer } from "../../models/customer.model";
+import { CUSTOMER_REPOSITORY } from "../../models/customer.model";
 // utils
 
 // Enums
@@ -18,13 +18,13 @@ export const createCustomerHandler: APIGatewayProxyHandler = async (
   const requestData = JSON.parse(event.body);
 
   return validateAgainstConstraints(requestData, CreateCustomerValidator)
-    .then(async () => {
-      return createCustomer(requestData);
+    .then(() => {
+      return CUSTOMER_REPOSITORY.create(requestData);
     })
     .then((customer) => {
       // Set Success Response
       response = new ResponseModel(
-        { customer: customer.toItemWithoutKeys() },
+        { customer: customer },
         StatusCode.OK,
         ResponseMessage.CREATE_CUSTOMER_SUCCESS,
       );

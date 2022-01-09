@@ -5,16 +5,10 @@ export default {
     },
     type: "string",
   },
-  materials: {
+  materialId: {
     presence: {
       allowEmpty: false,
     },
-    type: "array",
-  },
-  price: {
-    presence: {
-      allowEmpty: false,
-    },
-    type: "number",
+    type: "string",
   },
 };

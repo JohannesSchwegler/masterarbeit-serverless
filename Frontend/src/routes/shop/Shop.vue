@@ -1,8 +1,8 @@
 <template>
-    <div class="mt-8">
+    <div>
         <div class="container">
             <ShopHeader />
-            <h2 class="mt-8">Neuste Produkte</h2>
+            <h2 class="mt-6">Neuste Produkte</h2>
             <ShopList />
         </div>
     </div>

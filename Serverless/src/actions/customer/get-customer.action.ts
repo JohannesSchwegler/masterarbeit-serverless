@@ -1,33 +1,22 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
+import { CUSTOMER_REPOSITORY } from "src/models/customer.model";
+import ResponseModel from "src/models/response.model";
+import { ResponseMessage } from "../../enums/response-message.enum";
 // Models
 // utils
-
 // Enums
 import { StatusCode } from "../../enums/status-code.enum";
-import { ResponseMessage } from "../../enums/response-message.enum";
-import ResponseModel from "src/models/response.model";
-import databaseService from "src/services/database.service";
 
 export const getCustomerHandler: APIGatewayProxyHandler =
   async (): Promise<APIGatewayProxyResult> => {
     let response;
-
-    // Initialise DynamoDB PUT parameters
-    const params = {
-      TableName: process.env.LIST_TABLE,
-      Key: {
-        PK: "CUSTOMERS",
-        SK: "CUSTOMERS",
-      },
-    };
     // Inserts item into DynamoDB table
-    return await databaseService
-      .get(params)
-      .then(({ Item }) => {
+    return CUSTOMER_REPOSITORY.list()
+      .then((customers) => {
         // Set Success Response
         response = new ResponseModel(
-          { customers: Item.Customers },
+          { customers: customers },
           StatusCode.OK,
           ResponseMessage.GET_CUSTOMER_SUCCESS,
         );

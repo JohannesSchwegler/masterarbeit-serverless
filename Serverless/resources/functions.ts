@@ -1,12 +1,24 @@
 export default {
-  orderTopic: {
-    handler: "handler.orderTopicToMaterialsAction",
+  restoreDefaultData: {
+    handler: "handler.restoreDefaultDataAction",
+    events: [
+      {
+        http: {
+          method: "post",
+          path: "app/reset",
+        },
+      },
+    ],
+  },
+  handleOrderCreation: {
+    handler: "handler.handleOrderCreation",
     events: [
       {
         sns: "create-order-topic",
       },
     ],
   },
+
   createOrder: {
     handler: "handler.createOrderAction",
     events: [

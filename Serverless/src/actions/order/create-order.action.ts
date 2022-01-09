@@ -38,7 +38,7 @@ export const createOrderHandler: APIGatewayProxyHandler = async (
           PK: `CUST#${order.customerId}`,
           SK: `ORDER#${order.id}`,
           customerId: order.customerId,
-          materials: order.materials,
+          materialCode: order.materialCode,
           price: order.price,
         },
       };
@@ -48,21 +48,16 @@ export const createOrderHandler: APIGatewayProxyHandler = async (
       return order.id;
     })
     .then((orderId) => {
-      // Pusblish sns message
+      // Publish sns message to the topic with arn:aws:sns:us-east-1:123456789012:create-order-topic
       const sns = new AWS.SNS({
         endpoint: "http://127.0.0.1:4002",
         region: "us-east-1",
       });
-      sns.publish(
-        {
-          Message: "hello!",
-
-          TopicArn: `arn:aws:sns:${process.env.region}:${process.env.accountId}:create-order-topic`,
-        },
-        () => {
-          console.log("ping");
-        },
-      );
+      sns.publish({
+        Message: '{"default": "hello!"}',
+        MessageStructure: "json",
+        TopicArn: "arn:aws:sns:us-east-1:123456789012:create-order-topic",
+      });
 
       // Set Success Response
       response = new ResponseModel(

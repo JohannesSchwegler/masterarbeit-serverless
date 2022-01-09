@@ -1,10 +1,14 @@
 <template>
     <Sidebar v-model:visible="state.isCartSidebarOpen" :base-z-index="1000">
-        <div v-for="product in cartList" :key="product.id" class="product-item">
+        <div
+            v-for="product in cartList"
+            :key="product.id"
+            class="mb-5 p-3 border-solid border-1"
+        >
             <div class="product-item-content">
-                <div class="p-mb-3">
+                <div class="">
                     <img
-                        :src="`https://primefaces.org/primevue/showcase/demo/images/product/${product.image}`"
+                        :src="product.image"
                         :alt="product.name"
                         class="product-image"
                     />
@@ -21,72 +25,35 @@
                         "
                         >{{ product.inventoryStatus }}</span
                     >
-                    <div class="car-buttons p-mt-5">
-                        <Button
-                            icon="pi pi-shopping-cart"
-                            class="p-button-success p-button-rounded p-mr-2"
-                        />
-                    </div>
                 </div>
             </div>
         </div>
 
-        <div>
-            <p>Summe:</p>
-            {{ cartSumPrice }}
+        <div v-if="cartList.length === 0" class="text-lg mb-4">
+            <p class="mb-4">No products added yet</p>
+            <Button class="text-0">
+                <router-link
+                    to="/shop"
+                    class="text-0"
+                    @click="toggleCartSidebar"
+                >
+                    Continue shopping
+                </router-link>
+            </Button>
         </div>
-        <Button>
-            <router-link to="/checkout"> Checkout </router-link>
-        </Button>
+
+        <div v-if="cartList.length > 0">
+            <div class="text-xl mb-4">
+                <p class="mb-0">Summe:</p>
+                <span class="font-bold">{{ cartSumPrice }} $</span>
+            </div>
+            <Button class="text-0">
+                <router-link to="/shop/checkout" class="text-0">
+                    Checkout
+                </router-link>
+            </Button>
+        </div>
     </Sidebar>
-    <div class="card">
-        <Carousel
-            :value="products"
-            :num-visible="3"
-            :num-scroll="1"
-            :responsive-options="responsiveOptions"
-            class="custom-carousel"
-            :circular="true"
-            :autoplay-interval="6000"
-        >
-            <template #item="slotProps">
-                <div class="product-item">
-                    <div class="product-item-content">
-                        <div class="p-mb-3">
-                            <img
-                                :src="`https://primefaces.org/primevue/showcase/demo/images/product/${slotProps.data.image}`"
-                                :alt="slotProps.data.name"
-                                class="product-image"
-                            />
-                        </div>
-                        <div>
-                            <h4 class="p-mb-1">
-                                {{ slotProps.data.name }}
-                            </h4>
-                            <h6 class="p-mt-0 p-mb-3">
-                                ${{ slotProps.data.price }}
-                            </h6>
-                            <span
-                                :class="
-                                    'product-badge status-' +
-                                    slotProps.data.inventoryStatus.toLowerCase()
-                                "
-                                >{{ slotProps.data.inventoryStatus }}</span
-                            >
-                            <div class="car-buttons p-mt-5">
-                                <Button
-                                    icon="pi pi-shopping-cart"
-                                    class="
-                                        p-button-success p-button-rounded p-mr-2
-                                    "
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </Carousel>
-    </div>
 </template>
 
 <script>

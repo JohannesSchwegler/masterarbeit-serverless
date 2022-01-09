@@ -9,4 +9,6 @@ export { getMaterialByIdAction } from "./src/actions/materials-management/get-ma
 export { createOrderAction } from "./src/actions/order/create-order.action";
 
 // Topics
-export { orderTopicToMaterialsAction } from "./src/actions/topic/order-topic-to-materials.action";
+export { handleOrderCreation } from "./src/actions/topic/order-topic-to-materials.action";
+
+export { restoreDefaultDataAction } from "./src/actions/app/restore.action";

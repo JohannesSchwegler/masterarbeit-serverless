@@ -1,16 +1,14 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
-// Models
-import MaterialModel from "../../models/material.model";
-import CreateMaterialValidator from "../../validators/material/create.validator";
-// utils
-import { validateAgainstConstraints } from "../../utils/util";
-
+import ResponseModel from "src/models/response.model";
+import { ResponseMessage } from "../../enums/response-message.enum";
 // Enums
 import { StatusCode } from "../../enums/status-code.enum";
-import { ResponseMessage } from "../../enums/response-message.enum";
-import ResponseModel from "src/models/response.model";
-import databaseService from "src/services/database.service";
+// Models
+import { MATERIAL_RESPOSITORY } from "../../models/material.model";
+// utils
+import { validateAgainstConstraints } from "../../utils/util";
+import CreateMaterialValidator from "../../validators/material/create.validator";
 
 export const createMaterialHandler: APIGatewayProxyHandler = async (
   event,
@@ -24,41 +22,15 @@ export const createMaterialHandler: APIGatewayProxyHandler = async (
 
   // Validate against constraints
   return validateAgainstConstraints(requestData, CreateMaterialValidator)
-    .then(async () => {
-      // Initialise and hydrate model
-      const materialModel = new MaterialModel(requestData);
-
-      // Get model data
-      const material = materialModel.getEntityMappings();
-
-      const params = {
-        TableName: process.env.LIST_TABLE,
-        Item: {
-          PK: `MATERIAL`,
-          SK: `MAT#${material.id}`,
-          id: material.id,
-          code: material.code,
-          name: material.name,
-          description: material.description,
-          image: material.image,
-          category: material.category,
-          price: material.price,
-          quantity: material.quantity,
-          inventoryStatus: material.inventoryStatus,
-          rating: material.rating,
-        },
-      };
-
-      await databaseService.create(params);
-
-      return material.id;
+    .then(() => {
+      MATERIAL_RESPOSITORY.create(requestData);
     })
     .then((materialId) => {
       // Set Success Response
       response = new ResponseModel(
         { materialId },
         StatusCode.OK,
-        ResponseMessage.CREATE_CUSTOMER_SUCCESS,
+        ResponseMessage.CREATE_MATERIAL_SUCCESS,
       );
     })
     .catch((error) => {
@@ -70,7 +42,7 @@ export const createMaterialHandler: APIGatewayProxyHandler = async (
           : new ResponseModel(
               {},
               StatusCode.ERROR,
-              ResponseMessage.CREATE_CUSTOMER_FAIL,
+              ResponseMessage.CREATE_MATERIAL_FAIL,
             );
     })
     .then(() => {

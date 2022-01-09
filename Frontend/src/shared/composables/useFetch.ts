@@ -1,4 +1,4 @@
-import {computed, onMounted, readonly, ref, toRefs} from 'vue'
+import { computed, onMounted, readonly, ref, toRefs } from 'vue'
 
 interface State<T> {
     data?: T
@@ -14,38 +14,37 @@ type Action<T> =
     | { type: 'error'; payload: Error }
 
 function useReducer(reducer: any, initialArg: any, init?: any) {
-    console.log("initargs", initialArg)
-    const state = ref(init ? init(initialArg) : initialArg);
+    console.log('initargs', initialArg)
+    const state = ref(init ? init(initialArg) : initialArg)
     const dispatch = (action: any) => {
-        state.value = reducer(state.value, action);
-    };
+        state.value = reducer(state.value, action)
+    }
 
+    return [readonly(state), dispatch]
+}
 
-
-    return [readonly(state), dispatch];
-};
-
-export default function useFetch<T = unknown>(url: string, options?: RequestInit) {
+export default function useFetch<T = unknown>(
+    url: string,
+    options?: RequestInit
+) {
     // Used to prevent state update if the component is unmounted
-    const cancelRequest = ref(false
-    )
+    const cancelRequest = ref(false)
     const cache = <Cache<T>>{}
 
     const initialState: State<T> = {
         error: undefined,
-        data:  undefined,
+        data: undefined,
     }
-
 
     // Keep state logic separated
     const fetchReducer = (state: State<T>, action: Action<T>): State<T> => {
         switch (action.type) {
             case 'loading':
-                return {...initialState}
+                return { ...initialState }
             case 'fetched':
-                return {...initialState, data: action.payload}
+                return { ...initialState, data: action.payload }
             case 'error':
-                return {...initialState, error: action.payload}
+                return { ...initialState, error: action.payload }
             default:
                 return state
         }
@@ -54,16 +53,17 @@ export default function useFetch<T = unknown>(url: string, options?: RequestInit
     const [state, dispatch] = useReducer(fetchReducer, initialState)
 
     onMounted(async () => {
-        console.info("mounted")
+        console.info('mounted')
         // Do nothing if the url is not given
         if (!url) return
         const fetchData = async () => {
-            dispatch({type: 'loading'})
+            dispatch({ type: 'loading' })
 
+            console.log(state)
 
             // If a cache exists for this url, return it
             if (cache[url]) {
-                dispatch({type: 'fetched', payload: cache[url]})
+                dispatch({ type: 'fetched', payload: cache[url] })
                 return
             }
 
@@ -79,11 +79,11 @@ export default function useFetch<T = unknown>(url: string, options?: RequestInit
                 cache.url = data
                 if (cancelRequest.value) return
 
-                dispatch({type: 'fetched', payload: data.data})
+                dispatch({ type: 'fetched', payload: data.data })
             } catch (error) {
                 if (cancelRequest.value) return
 
-                dispatch({type: 'error', payload: error as Error})
+                dispatch({ type: 'error', payload: error as Error })
             }
         }
 
@@ -91,6 +91,4 @@ export default function useFetch<T = unknown>(url: string, options?: RequestInit
     })
 
     return state
-
 }
-

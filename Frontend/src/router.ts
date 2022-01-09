@@ -3,8 +3,7 @@ import Checkout from './routes/checkout/Checkout.vue'
 import Shop from './routes/shop/Shop.vue'
 import Erp from './routes/erp/Erp.vue'
 import ErpCustomers from './routes/erp/customers/ErpCustomers.vue'
-import ErpMaterialsmanagement
-    from "@/routes/erp/material-management/ErpMaterialsmanagement.vue";
+import ErpMaterialsmanagement from '@/routes/erp/material-management/ErpMaterialsmanagement.vue'
 
 const routes = [
     { path: '/', component: Erp },

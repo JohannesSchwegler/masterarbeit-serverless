@@ -1,5 +1,5 @@
 <template>
-    <div :class="$style.section">
+    <div class="card">
         <div :class="$style.section__isLoading" v-if="isLoading">
             <ProgressBar mode="indeterminate" />
         </div>
@@ -31,7 +31,7 @@ export default defineComponent({
     border-radius: 4px;
     box-shadow: rgba(17, 51, 83, 0.05) 0px 4px 12px 0px;
     overflow: hidden;
-    background: rgb(255, 255, 255);
+
     min-height: 400px;
     padding-top: 4px;
     margin-bottom: 50px;

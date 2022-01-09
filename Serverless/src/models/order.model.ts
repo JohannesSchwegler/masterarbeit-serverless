@@ -4,25 +4,25 @@ import { v4 as UUID } from "uuid";
 interface IProps {
   id?: string;
   customerId: string;
-  materials: string[];
+  materialCode: string;
   price: number;
 }
 
 export default class OrderModel {
   private _id: string;
   private _customerId: string;
-  private _materials: string[];
+  private _materialCode: string;
   private _price: number;
 
   constructor({
     id = UUID(),
     customerId = "",
-    materials = [],
+    materialCode,
     price = 0,
   }: IProps) {
     this._id = id;
     this._customerId = customerId;
-    this._materials = materials;
+    this._materialCode = materialCode;
     this._price = price;
   }
 
@@ -34,7 +34,7 @@ export default class OrderModel {
     return {
       id: this._id,
       customerId: this._customerId,
-      materials: this._materials,
+      materialCode: this._materialCode,
       price: this._price,
     };
   }
