@@ -15,9 +15,10 @@ const serverlessConfiguration: AWS = {
     list_table: "${self:service}-list-table-${opt:stage, self:provider.stage}",
     tasks_table:
       "${self:service}-tasks-table-${opt:stage, self:provider.stage}",
+    lambda_prefix: "masterarbeit",
     table_throughputs: {
       prod: 5,
-      default: 1,
+      default: 5,
     },
     table_throughput:
       "${self:custom.table_throughputs.${self:custom.stage}, self:custom.table_throughputs.default}",
@@ -59,16 +60,18 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs14.x",
+    stage: "dev",
+    region: "eu-west-1",
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
     },
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
-      REGION: "${self:custom.region}",
       STAGE: "${self:custom.stage}",
       LIST_TABLE: "${self:custom.list_table}",
-      TASKS_TABLE: "${self:custom.tasks_table}",
+      FUNCTION_ARN:
+        "arn:aws:lambda::${self:provider.region}:function:${self:service}-${self:provider.stage}-readMaterial",
     },
     lambdaHashingVersion: "20201221",
     iamRoleStatements: [
@@ -83,20 +86,30 @@ const serverlessConfiguration: AWS = {
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem",
         ],
-        Resource: [
-          { "Fn::GetAtt": ["ListTable", "Arn"] },
-          { "Fn::GetAtt": ["TasksTable", "Arn"] },
-        ],
+        Resource: [{ "Fn::GetAtt": ["ListTable", "Arn"] }],
+      },
+      {
+        Effect: "Allow",
+        Action: ["lambda:InvokeFunction", "lambda:InvokeAsync"],
+        Resource: "*",
       },
     ],
   },
   useDotenv: true,
+  resources: {
+    Resources: {
+      AccessLogs: {
+        Type: "AWS::Logs::LogGroup",
+        Properties: {
+          LogGroupName: "/aws/apigateway/${self:service}-AccessLogs",
+        },
+      },
+
+      ...dynamoDbTables,
+    },
+  },
   // import the function via paths
   functions: functions,
-
-  resources: {
-    Resources: dynamoDbTables,
-  },
 };
 
 module.exports = serverlessConfiguration;

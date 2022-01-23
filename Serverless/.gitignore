@@ -1,5 +1,6 @@
 .webpack
 .idea
 .dynamodb
+.serverless
 node_modules
 .env

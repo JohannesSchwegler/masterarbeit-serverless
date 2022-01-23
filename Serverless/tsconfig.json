@@ -9,6 +9,9 @@
     "target": "es2017",
     "outDir": "./dist",
     "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "types": ["node"],

@@ -7,16 +7,18 @@
     "provider": {
       "name": "aws",
       "runtime": "nodejs14.x",
+      "stage": "dev",
+      "region": "eu-west-1",
       "apiGateway": {
         "minimumCompressionSize": 1024,
         "shouldStartNameWithService": true
       },
       "environment": {
         "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-        "REGION": "eu-central-1",
         "STAGE": "dev",
         "LIST_TABLE": "LIST_TABLE",
-        "TASKS_TABLE": "serverless-tasks-table-dev",
+        "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+        "AWS_REGION": "eu-west-2",
         "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
         "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
         "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -46,18 +48,18 @@
                 "ListTable",
                 "Arn"
               ]
-            },
-            {
-              "Fn::GetAtt": [
-                "TasksTable",
-                "Arn"
-              ]
             }
           ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "lambda:InvokeFunction",
+            "lambda:InvokeAsync"
+          ],
+          "Resource": "*"
         }
       ],
-      "stage": "dev",
-      "region": "us-east-1",
       "versionFunctions": true,
       "compiledCloudFormationTemplate": {
         "AWSTemplateFormatVersion": "2010-09-09",
@@ -132,22 +134,22 @@
               }
             }
           },
-          "RestoreDefaultDataLogGroup": {
+          "ChildLambdaLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-restoreDefaultData"
+              "LogGroupName": "/aws/lambda/serverless-dev-childLambda"
             }
           },
-          "HandleOrderCreationLogGroup": {
+          "SaleOrderProcessingActionLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-handleOrderCreation"
+              "LogGroupName": "/aws/lambda/serverless-dev-saleOrderProcessingAction"
             }
           },
-          "CreateOrderLogGroup": {
+          "ListMaterialLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-createOrder"
+              "LogGroupName": "/aws/lambda/serverless-dev-listMaterial"
             }
           },
           "CreateMaterialLogGroup": {
@@ -156,16 +158,16 @@
               "LogGroupName": "/aws/lambda/serverless-dev-createMaterial"
             }
           },
-          "GetMaterialLogGroup": {
+          "ReadMaterialLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-getMaterial"
+              "LogGroupName": "/aws/lambda/readMaterialAction"
             }
           },
-          "GetMaterialByIdLogGroup": {
+          "ListCustomerLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-getMaterialById"
+              "LogGroupName": "/aws/lambda/serverless-dev-listCustomer"
             }
           },
           "CreateCustomerLogGroup": {
@@ -174,16 +176,16 @@
               "LogGroupName": "/aws/lambda/serverless-dev-createCustomer"
             }
           },
-          "GetCustomerLogGroup": {
+          "ReadCustomerLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-getCustomer"
+              "LogGroupName": "/aws/lambda/serverless-dev-readCustomer"
             }
           },
-          "GetCustomerByIdLogGroup": {
+          "UpdateCustomerLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "LogGroupName": "/aws/lambda/serverless-dev-getCustomerById"
+              "LogGroupName": "/aws/lambda/serverless-dev-updateCustomer"
             }
           },
           "IamRoleLambdaExecution": {
@@ -228,6 +230,9 @@
                         ],
                         "Resource": [
                           {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/readMaterialAction:*"
+                          },
+                          {
                             "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/serverless-dev*:*"
                           }
                         ]
@@ -239,12 +244,18 @@
                         ],
                         "Resource": [
                           {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/readMaterialAction:*:*"
+                          },
+                          {
                             "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/serverless-dev*:*:*"
                           }
                         ]
                       },
                       {
                         "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][1]"
                       }
                     ]
                   }
@@ -266,27 +277,27 @@
               }
             }
           },
-          "RestoreDefaultDataLambdaFunction": {
+          "ChildLambdaLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/restoreDefaultData.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/childLambda.zip"
               },
-              "Handler": "handler.restoreDefaultDataAction",
+              "Handler": "handler.mainHandler",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-restoreDefaultData",
+              "FunctionName": "serverless-dev-childLambda",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -306,30 +317,30 @@
               }
             },
             "DependsOn": [
-              "RestoreDefaultDataLogGroup"
+              "ChildLambdaLogGroup"
             ]
           },
-          "HandleOrderCreationLambdaFunction": {
+          "SaleOrderProcessingActionLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/handleOrderCreation.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/saleOrderProcessingAction.zip"
               },
-              "Handler": "handler.handleOrderCreation",
+              "Handler": "handler.saleOrderProcessingAction",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-handleOrderCreation",
+              "FunctionName": "serverless-dev-saleOrderProcessingAction",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -349,30 +360,30 @@
               }
             },
             "DependsOn": [
-              "HandleOrderCreationLogGroup"
+              "SaleOrderProcessingActionLogGroup"
             ]
           },
-          "CreateOrderLambdaFunction": {
+          "ListMaterialLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/createOrder.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/listMaterial.zip"
               },
-              "Handler": "handler.createOrderAction",
+              "Handler": "handler.listMaterialAction",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-createOrder",
+              "FunctionName": "serverless-dev-listMaterial",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -392,7 +403,7 @@
               }
             },
             "DependsOn": [
-              "CreateOrderLogGroup"
+              "ListMaterialLogGroup"
             ]
           },
           "CreateMaterialLambdaFunction": {
@@ -402,7 +413,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/createMaterial.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/createMaterial.zip"
               },
               "Handler": "handler.createMaterialAction",
               "Runtime": "nodejs14.x",
@@ -412,10 +423,10 @@
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -438,27 +449,27 @@
               "CreateMaterialLogGroup"
             ]
           },
-          "GetMaterialLambdaFunction": {
+          "ReadMaterialLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/getMaterial.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/readMaterial.zip"
               },
-              "Handler": "handler.getMaterialAction",
+              "Handler": "handler.readMaterialAction",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-getMaterial",
+              "FunctionName": "readMaterialAction",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -478,30 +489,30 @@
               }
             },
             "DependsOn": [
-              "GetMaterialLogGroup"
+              "ReadMaterialLogGroup"
             ]
           },
-          "GetMaterialByIdLambdaFunction": {
+          "ListCustomerLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/getMaterialById.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/listCustomer.zip"
               },
-              "Handler": "handler.getMaterialByIdAction",
+              "Handler": "handler.listCustomerAction",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-getMaterialById",
+              "FunctionName": "serverless-dev-listCustomer",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -521,7 +532,7 @@
               }
             },
             "DependsOn": [
-              "GetMaterialByIdLogGroup"
+              "ListCustomerLogGroup"
             ]
           },
           "CreateCustomerLambdaFunction": {
@@ -531,7 +542,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/createCustomer.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/createCustomer.zip"
               },
               "Handler": "handler.createCustomerAction",
               "Runtime": "nodejs14.x",
@@ -541,10 +552,10 @@
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -567,27 +578,27 @@
               "CreateCustomerLogGroup"
             ]
           },
-          "GetCustomerLambdaFunction": {
+          "ReadCustomerLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/getCustomer.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/readCustomer.zip"
               },
-              "Handler": "handler.getCustomerAction",
+              "Handler": "handler.readCustomerAction",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-getCustomer",
+              "FunctionName": "serverless-dev-readCustomer",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -607,30 +618,30 @@
               }
             },
             "DependsOn": [
-              "GetCustomerLogGroup"
+              "ReadCustomerLogGroup"
             ]
           },
-          "GetCustomerByIdLambdaFunction": {
+          "UpdateCustomerLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
               "Code": {
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z/getCustomerById.zip"
+                "S3Key": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z/updateCustomer.zip"
               },
-              "Handler": "handler.getCustomerByIdAction",
+              "Handler": "handler.updateCustomerAction",
               "Runtime": "nodejs14.x",
-              "FunctionName": "serverless-dev-getCustomerById",
+              "FunctionName": "serverless-dev-updateCustomer",
               "MemorySize": 1024,
               "Timeout": 6,
               "Environment": {
                 "Variables": {
                   "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
-                  "REGION": "eu-central-1",
                   "STAGE": "dev",
                   "LIST_TABLE": "LIST_TABLE",
-                  "TASKS_TABLE": "serverless-tasks-table-dev",
+                  "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:serverless-dev-readMaterial",
+                  "AWS_REGION": "eu-west-2",
                   "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
                   "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
                   "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
@@ -650,97 +661,97 @@
               }
             },
             "DependsOn": [
-              "GetCustomerByIdLogGroup"
+              "UpdateCustomerLogGroup"
             ]
           },
-          "RestoreDefaultDataLambdaVersionpcmrSB5zN43XybKR53DEj9ZC9qkGUgTKNeZokaM5dk": {
+          "ChildLambdaLambdaVersion73xTPgDqUfiaNCzfevVv28CITQcV7yqZHaQFrmAtLw": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "RestoreDefaultDataLambdaFunction"
+                "Ref": "ChildLambdaLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "ETqIA5JOy+AL78YNiJYLjSRbGT+Y7+do/L306Kz+7VI="
             }
           },
-          "GetMaterialLambdaVersionn0y73JlcwiuAu1wsOPsQBQlv46EjR88SThhQ1r0yiQ": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "GetMaterialLambdaFunction"
-              },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
-            }
-          },
-          "HandleOrderCreationLambdaVersionem9WYs9ZNAkk1cWuYe0UgWUvb0Csofx8dsyVYzRGQ": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "HandleOrderCreationLambdaFunction"
-              },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
-            }
-          },
-          "CreateMaterialLambdaVersionjMOqhalES1rWExN2arks9AMPbUTB3887o1mg1BC1lk": {
+          "CreateMaterialLambdaVersionC9aeVP2VKA8eN6shZSYz4ZG1qDVSpkZeeCs2SgtbY": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "CreateMaterialLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
             }
           },
-          "CreateOrderLambdaVersionzvzfcdCMboA5NgcLBiwVxV2wYQu9yLJCP6eFp48NbqY": {
+          "SaleOrderProcessingActionLambdaVersionL7Go9EbV4EmfoLcMLjyByUQsreKsFXjikj6CTbc": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "CreateOrderLambdaFunction"
+                "Ref": "SaleOrderProcessingActionLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
             }
           },
-          "GetMaterialByIdLambdaVersionJNGrT5WHPC5WktSRme95lJ8Nrfq4SMOIJivS3No7L54": {
+          "ReadMaterialLambdaVersionbQBJCu8AKQZTpqjv39HY8SXU3QMpYnD7XoKkXCV1NI": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "GetMaterialByIdLambdaFunction"
+                "Ref": "ReadMaterialLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
             }
           },
-          "CreateCustomerLambdaVersionjX3ek9Lu55ZSNKVXxVZxmx4aUSbivrlgEBixTd97TdI": {
+          "ListMaterialLambdaVersionyZha8l8xpKdWFvPZYtCj2auJLq91S3FLU3GbOhDcE": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ListMaterialLambdaFunction"
+              },
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
+            }
+          },
+          "CreateCustomerLambdaVersionSLtOTrumSYtp3H54YZkM8zhA9rZKpV6jGvk4KCDEPs": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "CreateCustomerLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
             }
           },
-          "GetCustomerLambdaVersiondHhXCgOoccs2yuBH5wMjKXR0A2KhTRTLbq87AhCg": {
+          "UpdateCustomerLambdaVersionLuaFSjONILpjzElArpnbYAIbqlpNxwpcYwjG6FzXE": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "GetCustomerLambdaFunction"
+                "Ref": "UpdateCustomerLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
             }
           },
-          "GetCustomerByIdLambdaVersionLRDdKDDPLtkaUa8HeDbuaexVMMYCjIhMNR0Xe7T498": {
+          "ReadCustomerLambdaVersionSAWPzOUhPhH8LM7qoc0pRuD2HyxTj6A8Z2CQ2cMp0": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
-                "Ref": "GetCustomerByIdLambdaFunction"
+                "Ref": "ReadCustomerLambdaFunction"
               },
-              "CodeSha256": "jIFt6u4ZFhjGlzkovtfU9nGIxvLDOPjvb1wGc7FXYbQ="
+              "CodeSha256": "dL2YPpbXVqKbSbn80TFZonxGqvLPldfjJHNipV/NZDI="
+            }
+          },
+          "ListCustomerLambdaVersionuhbIzFlip1UbvmOdgX8SbncRk7CTmRzcXKsED6Yg2w": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ListCustomerLambdaFunction"
+              },
+              "CodeSha256": "ETqIA5JOy+AL78YNiJYLjSRbGT+Y7+do/L306Kz+7VI="
             }
           },
           "ApiGatewayRestApi": {
@@ -756,7 +767,7 @@
               "MinimumCompressionSize": 1024
             }
           },
-          "ApiGatewayResourceApp": {
+          "ApiGatewayResourceSaleorderprocessing": {
             "Type": "AWS::ApiGateway::Resource",
             "Properties": {
               "ParentId": {
@@ -765,34 +776,7 @@
                   "RootResourceId"
                 ]
               },
-              "PathPart": "app",
-              "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
-              }
-            }
-          },
-          "ApiGatewayResourceAppReset": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
-              "ParentId": {
-                "Ref": "ApiGatewayResourceApp"
-              },
-              "PathPart": "reset",
-              "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
-              }
-            }
-          },
-          "ApiGatewayResourceOrder": {
-            "Type": "AWS::ApiGateway::Resource",
-            "Properties": {
-              "ParentId": {
-                "Fn::GetAtt": [
-                  "ApiGatewayRestApi",
-                  "RootResourceId"
-                ]
-              },
-              "PathPart": "order",
+              "PathPart": "saleOrderProcessing",
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
               }
@@ -852,13 +836,13 @@
               }
             }
           },
-          "ApiGatewayMethodAppResetPost": {
+          "ApiGatewayMethodSaleorderprocessingPost": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
               "HttpMethod": "POST",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourceAppReset"
+                "Ref": "ApiGatewayResourceSaleorderprocessing"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -883,7 +867,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "RestoreDefaultDataLambdaFunction",
+                          "SaleOrderProcessingActionLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -895,16 +879,16 @@
               "MethodResponses": []
             },
             "DependsOn": [
-              "RestoreDefaultDataLambdaPermissionApiGateway"
+              "SaleOrderProcessingActionLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodOrderPost": {
+          "ApiGatewayMethodMaterialGet": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
-              "HttpMethod": "POST",
+              "HttpMethod": "GET",
               "RequestParameters": {},
               "ResourceId": {
-                "Ref": "ApiGatewayResourceOrder"
+                "Ref": "ApiGatewayResourceMaterial"
               },
               "RestApiId": {
                 "Ref": "ApiGatewayRestApi"
@@ -929,7 +913,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "CreateOrderLambdaFunction",
+                          "ListMaterialLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -941,7 +925,7 @@
               "MethodResponses": []
             },
             "DependsOn": [
-              "CreateOrderLambdaPermissionApiGateway"
+              "ListMaterialLambdaPermissionApiGateway"
             ]
           },
           "ApiGatewayMethodMaterialPost": {
@@ -990,52 +974,6 @@
               "CreateMaterialLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodMaterialGet": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
-              "HttpMethod": "GET",
-              "RequestParameters": {},
-              "ResourceId": {
-                "Ref": "ApiGatewayResourceMaterial"
-              },
-              "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
-              },
-              "ApiKeyRequired": false,
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "IntegrationHttpMethod": "POST",
-                "Type": "AWS_PROXY",
-                "Uri": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":apigateway:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":lambda:path/2015-03-31/functions/",
-                      {
-                        "Fn::GetAtt": [
-                          "GetMaterialLambdaFunction",
-                          "Arn"
-                        ]
-                      },
-                      "/invocations"
-                    ]
-                  ]
-                }
-              },
-              "MethodResponses": []
-            },
-            "DependsOn": [
-              "GetMaterialLambdaPermissionApiGateway"
-            ]
-          },
           "ApiGatewayMethodMaterialIdVarGet": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
@@ -1069,7 +1007,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "GetMaterialByIdLambdaFunction",
+                          "ReadMaterialLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -1084,7 +1022,53 @@
               }
             },
             "DependsOn": [
-              "GetMaterialByIdLambdaPermissionApiGateway"
+              "ReadMaterialLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodCustomerGet": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "GET",
+              "RequestParameters": {},
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceCustomer"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "ListCustomerLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": []
+            },
+            "DependsOn": [
+              "ListCustomerLambdaPermissionApiGateway"
             ]
           },
           "ApiGatewayMethodCustomerPost": {
@@ -1133,52 +1117,6 @@
               "CreateCustomerLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayMethodCustomerGet": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
-              "HttpMethod": "GET",
-              "RequestParameters": {},
-              "ResourceId": {
-                "Ref": "ApiGatewayResourceCustomer"
-              },
-              "RestApiId": {
-                "Ref": "ApiGatewayRestApi"
-              },
-              "ApiKeyRequired": false,
-              "AuthorizationType": "NONE",
-              "Integration": {
-                "IntegrationHttpMethod": "POST",
-                "Type": "AWS_PROXY",
-                "Uri": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":apigateway:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":lambda:path/2015-03-31/functions/",
-                      {
-                        "Fn::GetAtt": [
-                          "GetCustomerLambdaFunction",
-                          "Arn"
-                        ]
-                      },
-                      "/invocations"
-                    ]
-                  ]
-                }
-              },
-              "MethodResponses": []
-            },
-            "DependsOn": [
-              "GetCustomerLambdaPermissionApiGateway"
-            ]
-          },
           "ApiGatewayMethodCustomerIdVarGet": {
             "Type": "AWS::ApiGateway::Method",
             "Properties": {
@@ -1212,7 +1150,7 @@
                       ":lambda:path/2015-03-31/functions/",
                       {
                         "Fn::GetAtt": [
-                          "GetCustomerByIdLambdaFunction",
+                          "ReadCustomerLambdaFunction",
                           "Arn"
                         ]
                       },
@@ -1227,7 +1165,58 @@
               }
             },
             "DependsOn": [
-              "GetCustomerByIdLambdaPermissionApiGateway"
+              "ReadCustomerLambdaPermissionApiGateway"
+            ]
+          },
+          "ApiGatewayMethodCustomerIdVarPut": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+              "HttpMethod": "PUT",
+              "RequestParameters": {
+                "method.request.path.id": true
+              },
+              "ResourceId": {
+                "Ref": "ApiGatewayResourceCustomerIdVar"
+              },
+              "RestApiId": {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "ApiKeyRequired": false,
+              "AuthorizationType": "NONE",
+              "Integration": {
+                "IntegrationHttpMethod": "POST",
+                "Type": "AWS_PROXY",
+                "Uri": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":apigateway:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":lambda:path/2015-03-31/functions/",
+                      {
+                        "Fn::GetAtt": [
+                          "UpdateCustomerLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "/invocations"
+                    ]
+                  ]
+                }
+              },
+              "MethodResponses": [],
+              "RequestValidatorId": {
+                "Ref": "ApiGatewayServerlessRequestValidator"
+              }
+            },
+            "DependsOn": [
+              "UpdateCustomerLambdaPermissionApiGateway"
             ]
           },
           "ApiGatewayServerlessRequestValidator": {
@@ -1241,7 +1230,7 @@
               "Name": "serverless-dev | Validate request body and querystring parameters"
             }
           },
-          "ApiGatewayDeployment1641751802110": {
+          "ApiGatewayDeployment1642701782215": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -1250,22 +1239,22 @@
               "StageName": "dev"
             },
             "DependsOn": [
-              "ApiGatewayMethodAppResetPost",
-              "ApiGatewayMethodOrderPost",
-              "ApiGatewayMethodMaterialPost",
+              "ApiGatewayMethodSaleorderprocessingPost",
               "ApiGatewayMethodMaterialGet",
+              "ApiGatewayMethodMaterialPost",
               "ApiGatewayMethodMaterialIdVarGet",
-              "ApiGatewayMethodCustomerPost",
               "ApiGatewayMethodCustomerGet",
-              "ApiGatewayMethodCustomerIdVarGet"
+              "ApiGatewayMethodCustomerPost",
+              "ApiGatewayMethodCustomerIdVarGet",
+              "ApiGatewayMethodCustomerIdVarPut"
             ]
           },
-          "RestoreDefaultDataLambdaPermissionApiGateway": {
+          "SaleOrderProcessingActionLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "RestoreDefaultDataLambdaFunction",
+                  "SaleOrderProcessingActionLambdaFunction",
                   "Arn"
                 ]
               },
@@ -1297,12 +1286,12 @@
               }
             }
           },
-          "CreateOrderLambdaPermissionApiGateway": {
+          "ListMaterialLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "CreateOrderLambdaFunction",
+                  "ListMaterialLambdaFunction",
                   "Arn"
                 ]
               },
@@ -1371,12 +1360,12 @@
               }
             }
           },
-          "GetMaterialLambdaPermissionApiGateway": {
+          "ReadMaterialLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "GetMaterialLambdaFunction",
+                  "ReadMaterialLambdaFunction",
                   "Arn"
                 ]
               },
@@ -1408,12 +1397,12 @@
               }
             }
           },
-          "GetMaterialByIdLambdaPermissionApiGateway": {
+          "ListCustomerLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "GetMaterialByIdLambdaFunction",
+                  "ListCustomerLambdaFunction",
                   "Arn"
                 ]
               },
@@ -1482,12 +1471,12 @@
               }
             }
           },
-          "GetCustomerLambdaPermissionApiGateway": {
+          "ReadCustomerLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "GetCustomerLambdaFunction",
+                  "ReadCustomerLambdaFunction",
                   "Arn"
                 ]
               },
@@ -1519,12 +1508,12 @@
               }
             }
           },
-          "GetCustomerByIdLambdaPermissionApiGateway": {
+          "UpdateCustomerLambdaPermissionApiGateway": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
               "FunctionName": {
                 "Fn::GetAtt": [
-                  "GetCustomerByIdLambdaFunction",
+                  "UpdateCustomerLambdaFunction",
                   "Arn"
                 ]
               },
@@ -1556,62 +1545,17 @@
               }
             }
           },
-          "SNSTopicCreateordertopic": {
-            "Type": "AWS::SNS::Topic",
+          "AccessLogs": {
+            "Type": "AWS::Logs::LogGroup",
             "Properties": {
-              "TopicName": "create-order-topic",
-              "Subscription": [
-                {
-                  "Endpoint": {
-                    "Fn::GetAtt": [
-                      "HandleOrderCreationLambdaFunction",
-                      "Arn"
-                    ]
-                  },
-                  "Protocol": "lambda"
-                }
-              ]
-            }
-          },
-          "HandleOrderCreationLambdaPermissionCreateordertopicSNS": {
-            "Type": "AWS::Lambda::Permission",
-            "Properties": {
-              "FunctionName": {
-                "Fn::GetAtt": [
-                  "HandleOrderCreationLambdaFunction",
-                  "Arn"
-                ]
-              },
-              "Action": "lambda:InvokeFunction",
-              "Principal": "sns.amazonaws.com",
-              "SourceArn": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition"
-                    },
-                    ":sns:",
-                    {
-                      "Ref": "AWS::Region"
-                    },
-                    ":",
-                    {
-                      "Ref": "AWS::AccountId"
-                    },
-                    ":",
-                    "create-order-topic"
-                  ]
-                ]
-              }
+              "LogGroupName": "/aws/apigateway/serverless-AccessLogs"
             }
           },
           "ListTable": {
             "Type": "AWS::DynamoDB::Table",
             "DeletionPolicy": "Retain",
             "Properties": {
-              "TableName": "LIST_TABLE",
+              "TableName": "serverless-list-table-dev",
               "AttributeDefinitions": [
                 {
                   "AttributeName": "PK",
@@ -1633,8 +1577,8 @@
                 }
               ],
               "ProvisionedThroughput": {
-                "ReadCapacityUnits": 1,
-                "WriteCapacityUnits": 1
+                "ReadCapacityUnits": 5,
+                "WriteCapacityUnits": 5
               }
             }
           }
@@ -1648,85 +1592,85 @@
               "Name": "sls-serverless-dev-ServerlessDeploymentBucketName"
             }
           },
-          "RestoreDefaultDataLambdaFunctionQualifiedArn": {
+          "ChildLambdaLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "RestoreDefaultDataLambdaVersionpcmrSB5zN43XybKR53DEj9ZC9qkGUgTKNeZokaM5dk"
+              "Ref": "ChildLambdaLambdaVersion73xTPgDqUfiaNCzfevVv28CITQcV7yqZHaQFrmAtLw"
             },
             "Export": {
-              "Name": "sls-serverless-dev-RestoreDefaultDataLambdaFunctionQualifiedArn"
-            }
-          },
-          "GetMaterialLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "GetMaterialLambdaVersionn0y73JlcwiuAu1wsOPsQBQlv46EjR88SThhQ1r0yiQ"
-            },
-            "Export": {
-              "Name": "sls-serverless-dev-GetMaterialLambdaFunctionQualifiedArn"
-            }
-          },
-          "HandleOrderCreationLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "HandleOrderCreationLambdaVersionem9WYs9ZNAkk1cWuYe0UgWUvb0Csofx8dsyVYzRGQ"
-            },
-            "Export": {
-              "Name": "sls-serverless-dev-HandleOrderCreationLambdaFunctionQualifiedArn"
+              "Name": "sls-serverless-dev-ChildLambdaLambdaFunctionQualifiedArn"
             }
           },
           "CreateMaterialLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateMaterialLambdaVersionjMOqhalES1rWExN2arks9AMPbUTB3887o1mg1BC1lk"
+              "Ref": "CreateMaterialLambdaVersionC9aeVP2VKA8eN6shZSYz4ZG1qDVSpkZeeCs2SgtbY"
             },
             "Export": {
               "Name": "sls-serverless-dev-CreateMaterialLambdaFunctionQualifiedArn"
             }
           },
-          "CreateOrderLambdaFunctionQualifiedArn": {
+          "SaleOrderProcessingActionLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateOrderLambdaVersionzvzfcdCMboA5NgcLBiwVxV2wYQu9yLJCP6eFp48NbqY"
+              "Ref": "SaleOrderProcessingActionLambdaVersionL7Go9EbV4EmfoLcMLjyByUQsreKsFXjikj6CTbc"
             },
             "Export": {
-              "Name": "sls-serverless-dev-CreateOrderLambdaFunctionQualifiedArn"
+              "Name": "sls-serverless-dev-SaleOrderProcessingActionLambdaFunctionQualifiedArn"
             }
           },
-          "GetMaterialByIdLambdaFunctionQualifiedArn": {
+          "ReadMaterialLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetMaterialByIdLambdaVersionJNGrT5WHPC5WktSRme95lJ8Nrfq4SMOIJivS3No7L54"
+              "Ref": "ReadMaterialLambdaVersionbQBJCu8AKQZTpqjv39HY8SXU3QMpYnD7XoKkXCV1NI"
             },
             "Export": {
-              "Name": "sls-serverless-dev-GetMaterialByIdLambdaFunctionQualifiedArn"
+              "Name": "sls-serverless-dev-ReadMaterialLambdaFunctionQualifiedArn"
+            }
+          },
+          "ListMaterialLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ListMaterialLambdaVersionyZha8l8xpKdWFvPZYtCj2auJLq91S3FLU3GbOhDcE"
+            },
+            "Export": {
+              "Name": "sls-serverless-dev-ListMaterialLambdaFunctionQualifiedArn"
             }
           },
           "CreateCustomerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateCustomerLambdaVersionjX3ek9Lu55ZSNKVXxVZxmx4aUSbivrlgEBixTd97TdI"
+              "Ref": "CreateCustomerLambdaVersionSLtOTrumSYtp3H54YZkM8zhA9rZKpV6jGvk4KCDEPs"
             },
             "Export": {
               "Name": "sls-serverless-dev-CreateCustomerLambdaFunctionQualifiedArn"
             }
           },
-          "GetCustomerLambdaFunctionQualifiedArn": {
+          "UpdateCustomerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetCustomerLambdaVersiondHhXCgOoccs2yuBH5wMjKXR0A2KhTRTLbq87AhCg"
+              "Ref": "UpdateCustomerLambdaVersionLuaFSjONILpjzElArpnbYAIbqlpNxwpcYwjG6FzXE"
             },
             "Export": {
-              "Name": "sls-serverless-dev-GetCustomerLambdaFunctionQualifiedArn"
+              "Name": "sls-serverless-dev-UpdateCustomerLambdaFunctionQualifiedArn"
             }
           },
-          "GetCustomerByIdLambdaFunctionQualifiedArn": {
+          "ReadCustomerLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "GetCustomerByIdLambdaVersionLRDdKDDPLtkaUa8HeDbuaexVMMYCjIhMNR0Xe7T498"
+              "Ref": "ReadCustomerLambdaVersionSAWPzOUhPhH8LM7qoc0pRuD2HyxTj6A8Z2CQ2cMp0"
             },
             "Export": {
-              "Name": "sls-serverless-dev-GetCustomerByIdLambdaFunctionQualifiedArn"
+              "Name": "sls-serverless-dev-ReadCustomerLambdaFunctionQualifiedArn"
+            }
+          },
+          "ListCustomerLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ListCustomerLambdaVersionuhbIzFlip1UbvmOdgX8SbncRk7CTmRzcXKsED6Yg2w"
+            },
+            "Export": {
+              "Name": "sls-serverless-dev-ListCustomerLambdaFunctionQualifiedArn"
             }
           },
           "ServiceEndpoint": {
@@ -1842,15 +1786,16 @@
       "vpc": {}
     },
     "custom": {
-      "region": "us-east-1",
+      "region": "eu-west-1",
       "stage": "dev",
       "list_table": "serverless-list-table-dev",
       "tasks_table": "serverless-tasks-table-dev",
+      "lambda_prefix": "masterarbeit",
       "table_throughputs": {
         "prod": 5,
-        "default": 1
+        "default": 5
       },
-      "table_throughput": 1,
+      "table_throughput": 5,
       "dynamodb": {
         "stages": [
           "dev"
@@ -1888,7 +1833,9 @@
           "forceInclude": null,
           "packagePath": "package.json"
         },
-        "excludeFiles": null
+        "excludeFiles": null,
+        "excludeRegex": {},
+        "keepOutputDirectory": false
       }
     },
     "plugins": [
@@ -1900,64 +1847,60 @@
     ],
     "pluginsData": {},
     "functions": {
-      "restoreDefaultData": {
-        "handler": "handler.restoreDefaultDataAction",
+      "childLambda": {
+        "handler": "handler.mainHandler",
+        "events": [],
+        "name": "serverless-dev-childLambda",
+        "package": {
+          "artifact": ".serverless\\childLambda.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "ChildLambdaLambdaVersion73xTPgDqUfiaNCzfevVv28CITQcV7yqZHaQFrmAtLw"
+      },
+      "saleOrderProcessingAction": {
+        "handler": "handler.saleOrderProcessingAction",
         "events": [
           {
             "http": {
               "method": "post",
-              "path": "app/reset",
+              "path": "saleOrderProcessing",
               "integration": "AWS_PROXY"
             }
           }
         ],
-        "name": "serverless-dev-restoreDefaultData",
+        "name": "serverless-dev-saleOrderProcessingAction",
         "package": {
-          "artifact": ".serverless\\restoreDefaultData.zip"
+          "artifact": ".serverless\\saleOrderProcessingAction.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "RestoreDefaultDataLambdaVersionpcmrSB5zN43XybKR53DEj9ZC9qkGUgTKNeZokaM5dk"
+        "versionLogicalId": "SaleOrderProcessingActionLambdaVersionL7Go9EbV4EmfoLcMLjyByUQsreKsFXjikj6CTbc"
       },
-      "handleOrderCreation": {
-        "handler": "handler.handleOrderCreation",
-        "events": [
-          {
-            "sns": "create-order-topic"
-          }
-        ],
-        "name": "serverless-dev-handleOrderCreation",
-        "package": {
-          "artifact": ".serverless\\handleOrderCreation.zip"
-        },
-        "memory": 1024,
-        "timeout": 6,
-        "runtime": "nodejs14.x",
-        "vpc": {},
-        "versionLogicalId": "HandleOrderCreationLambdaVersionem9WYs9ZNAkk1cWuYe0UgWUvb0Csofx8dsyVYzRGQ"
-      },
-      "createOrder": {
-        "handler": "handler.createOrderAction",
+      "listMaterial": {
+        "handler": "handler.listMaterialAction",
         "events": [
           {
             "http": {
-              "method": "post",
-              "path": "order",
+              "method": "get",
+              "path": "material",
               "integration": "AWS_PROXY"
             }
           }
         ],
-        "name": "serverless-dev-createOrder",
+        "name": "serverless-dev-listMaterial",
         "package": {
-          "artifact": ".serverless\\createOrder.zip"
+          "artifact": ".serverless\\listMaterial.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "CreateOrderLambdaVersionzvzfcdCMboA5NgcLBiwVxV2wYQu9yLJCP6eFp48NbqY"
+        "versionLogicalId": "ListMaterialLambdaVersionyZha8l8xpKdWFvPZYtCj2auJLq91S3FLU3GbOhDcE"
       },
       "createMaterial": {
         "handler": "handler.createMaterialAction",
@@ -1978,31 +1921,11 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "CreateMaterialLambdaVersionjMOqhalES1rWExN2arks9AMPbUTB3887o1mg1BC1lk"
+        "versionLogicalId": "CreateMaterialLambdaVersionC9aeVP2VKA8eN6shZSYz4ZG1qDVSpkZeeCs2SgtbY"
       },
-      "getMaterial": {
-        "handler": "handler.getMaterialAction",
-        "events": [
-          {
-            "http": {
-              "method": "get",
-              "path": "material",
-              "integration": "AWS_PROXY"
-            }
-          }
-        ],
-        "name": "serverless-dev-getMaterial",
-        "package": {
-          "artifact": ".serverless\\getMaterial.zip"
-        },
-        "memory": 1024,
-        "timeout": 6,
-        "runtime": "nodejs14.x",
-        "vpc": {},
-        "versionLogicalId": "GetMaterialLambdaVersionn0y73JlcwiuAu1wsOPsQBQlv46EjR88SThhQ1r0yiQ"
-      },
-      "getMaterialById": {
-        "handler": "handler.getMaterialByIdAction",
+      "readMaterial": {
+        "name": "readMaterialAction",
+        "handler": "handler.readMaterialAction",
         "events": [
           {
             "http": {
@@ -2017,15 +1940,35 @@
             }
           }
         ],
-        "name": "serverless-dev-getMaterialById",
         "package": {
-          "artifact": ".serverless\\getMaterialById.zip"
+          "artifact": ".serverless\\readMaterial.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "GetMaterialByIdLambdaVersionJNGrT5WHPC5WktSRme95lJ8Nrfq4SMOIJivS3No7L54"
+        "versionLogicalId": "ReadMaterialLambdaVersionbQBJCu8AKQZTpqjv39HY8SXU3QMpYnD7XoKkXCV1NI"
+      },
+      "listCustomer": {
+        "handler": "handler.listCustomerAction",
+        "events": [
+          {
+            "http": {
+              "method": "get",
+              "path": "customer",
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "name": "serverless-dev-listCustomer",
+        "package": {
+          "artifact": ".serverless\\listCustomer.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "ListCustomerLambdaVersionuhbIzFlip1UbvmOdgX8SbncRk7CTmRzcXKsED6Yg2w"
       },
       "createCustomer": {
         "handler": "handler.createCustomerAction",
@@ -2046,31 +1989,10 @@
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "CreateCustomerLambdaVersionjX3ek9Lu55ZSNKVXxVZxmx4aUSbivrlgEBixTd97TdI"
+        "versionLogicalId": "CreateCustomerLambdaVersionSLtOTrumSYtp3H54YZkM8zhA9rZKpV6jGvk4KCDEPs"
       },
-      "getCustomer": {
-        "handler": "handler.getCustomerAction",
-        "events": [
-          {
-            "http": {
-              "method": "get",
-              "path": "customer",
-              "integration": "AWS_PROXY"
-            }
-          }
-        ],
-        "name": "serverless-dev-getCustomer",
-        "package": {
-          "artifact": ".serverless\\getCustomer.zip"
-        },
-        "memory": 1024,
-        "timeout": 6,
-        "runtime": "nodejs14.x",
-        "vpc": {},
-        "versionLogicalId": "GetCustomerLambdaVersiondHhXCgOoccs2yuBH5wMjKXR0A2KhTRTLbq87AhCg"
-      },
-      "getCustomerById": {
-        "handler": "handler.getCustomerByIdAction",
+      "readCustomer": {
+        "handler": "handler.readCustomerAction",
         "events": [
           {
             "http": {
@@ -2085,24 +2007,56 @@
             }
           }
         ],
-        "name": "serverless-dev-getCustomerById",
+        "name": "serverless-dev-readCustomer",
         "package": {
-          "artifact": ".serverless\\getCustomerById.zip"
+          "artifact": ".serverless\\readCustomer.zip"
         },
         "memory": 1024,
         "timeout": 6,
         "runtime": "nodejs14.x",
         "vpc": {},
-        "versionLogicalId": "GetCustomerByIdLambdaVersionLRDdKDDPLtkaUa8HeDbuaexVMMYCjIhMNR0Xe7T498"
+        "versionLogicalId": "ReadCustomerLambdaVersionSAWPzOUhPhH8LM7qoc0pRuD2HyxTj6A8Z2CQ2cMp0"
+      },
+      "updateCustomer": {
+        "handler": "handler.updateCustomerAction",
+        "events": [
+          {
+            "http": {
+              "method": "put",
+              "path": "customer/{id}",
+              "request": {
+                "parameters": {
+                  "method.request.path.id": true
+                }
+              },
+              "integration": "AWS_PROXY"
+            }
+          }
+        ],
+        "name": "serverless-dev-updateCustomer",
+        "package": {
+          "artifact": ".serverless\\updateCustomer.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs14.x",
+        "vpc": {},
+        "versionLogicalId": "UpdateCustomerLambdaVersionLuaFSjONILpjzElArpnbYAIbqlpNxwpcYwjG6FzXE"
       }
     },
     "resources": {
       "Resources": {
+        "AccessLogs": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/apigateway/serverless-AccessLogs"
+          }
+        },
         "ListTable": {
           "Type": "AWS::DynamoDB::Table",
           "DeletionPolicy": "Retain",
           "Properties": {
-            "TableName": "LIST_TABLE",
+            "TableName": "serverless-list-table-dev",
             "AttributeDefinitions": [
               {
                 "AttributeName": "PK",
@@ -2124,8 +2078,8 @@
               }
             ],
             "ProvisionedThroughput": {
-              "ReadCapacityUnits": 1,
-              "WriteCapacityUnits": 1
+              "ReadCapacityUnits": 5,
+              "WriteCapacityUnits": 5
             }
           }
         }
@@ -2147,17 +2101,17 @@
       },
       "package": {
         "individually": true,
-        "artifactDirectoryName": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z"
+        "artifactDirectoryName": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z"
       },
       "provider": {
         "$ref": "$[\"service\"][\"provider\"]"
       },
       "useDotenv": true,
-      "functions": {
-        "$ref": "$[\"service\"][\"functions\"]"
-      },
       "resources": {
         "$ref": "$[\"service\"][\"resources\"]"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
       }
     },
     "layers": {},
@@ -2165,7 +2119,7 @@
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/serverless/dev/1641751830610-2022-01-09T18:10:30.610Z",
+    "artifactDirectoryName": "serverless/serverless/dev/1642701815315-2022-01-20T18:03:35.315Z",
     "artifact": ""
   }
 }

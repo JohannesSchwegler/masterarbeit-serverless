@@ -1,14 +1,21 @@
-export { createCustomerAction } from "./src/actions/customer/create-customer.action";
+export {
+  createCustomerAction,
+  readCustomerAction,
+  updateCustomerAction,
+  deleteCustomerAction,
+  listCustomerAction,
+} from "./src/deployment-units/customer/business-objects/customer/actions/index";
 
-export { getCustomerByIdAction } from "./src/actions/customer/get-customer-by-id.action";
-export { getCustomerAction } from "./src/actions/customer/get-customer.action";
+export {
+  createMaterialAction,
+  readMaterialAction,
+  updateMaterialAction,
+  deleteMaterialAction,
+  listMaterialAction,
+} from "./src/deployment-units/material-management/business-objects/material/actions/index";
 
-export { createMaterialAction } from "./src/actions/materials-management/create-material.action";
-export { getMaterialAction } from "./src/actions/materials-management/get-material.action";
-export { getMaterialByIdAction } from "./src/actions/materials-management/get-material-by-id.action";
-export { createOrderAction } from "./src/actions/order/create-order.action";
-
-// Topics
-export { handleOrderCreation } from "./src/actions/topic/order-topic-to-materials.action";
-
-export { restoreDefaultDataAction } from "./src/actions/app/restore.action";
+export { saleOrderProcessingAction } from "./src/deployment-units/sales/process-components/sale-order-processing/sale-order-processing.pc";
+export async function mainHandler(event, context) {
+  console.log("event: ", JSON.stringify(event));
+  return context.functionName;
+}

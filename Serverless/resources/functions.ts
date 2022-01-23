@@ -1,31 +1,25 @@
 export default {
-  restoreDefaultData: {
-    handler: "handler.restoreDefaultDataAction",
+  childLambda: {
+    handler: "handler.mainHandler",
+  },
+  saleOrderProcessingAction: {
+    handler: "handler.saleOrderProcessingAction",
     events: [
       {
         http: {
           method: "post",
-          path: "app/reset",
+          path: "saleOrderProcessing",
         },
       },
     ],
   },
-  handleOrderCreation: {
-    handler: "handler.handleOrderCreation",
-    events: [
-      {
-        sns: "create-order-topic",
-      },
-    ],
-  },
-
-  createOrder: {
-    handler: "handler.createOrderAction",
+  listMaterial: {
+    handler: "handler.listMaterialAction",
     events: [
       {
         http: {
-          method: "post",
-          path: "order",
+          method: "get",
+          path: "material",
         },
       },
     ],
@@ -41,19 +35,9 @@ export default {
       },
     ],
   },
-  getMaterial: {
-    handler: "handler.getMaterialAction",
-    events: [
-      {
-        http: {
-          method: "get",
-          path: "material",
-        },
-      },
-    ],
-  },
-  getMaterialById: {
-    handler: "handler.getMaterialByIdAction",
+  readMaterial: {
+    name: "readMaterialAction",
+    handler: "handler.readMaterialAction",
     events: [
       {
         http: {
@@ -70,6 +54,36 @@ export default {
       },
     ],
   },
+  // restoreDefaultData: {
+  //   handler: "handler.restoreDefaultDataAction",
+  //   events: [
+  //     {
+  //       http: {
+  //         method: "post",
+  //         path: "app/reset",
+  //       },
+  //     },
+  //   ],
+  // },
+  // handleOrderCreation: {
+  //   handler: "handler.handleOrderCreation",
+  //   events: [
+  //     {
+  //       sns: "create-order-topic",
+  //     },
+  //   ],
+  // },
+  listCustomer: {
+    handler: "handler.listCustomerAction",
+    events: [
+      {
+        http: {
+          method: "get",
+          path: "customer",
+        },
+      },
+    ],
+  },
   createCustomer: {
     handler: "handler.createCustomerAction",
     events: [
@@ -81,23 +95,30 @@ export default {
       },
     ],
   },
-  getCustomer: {
-    handler: "handler.getCustomerAction",
+  readCustomer: {
+    handler: "handler.readCustomerAction",
     events: [
       {
         http: {
           method: "get",
-          path: "customer",
+          path: "customer/{id}",
+          request: {
+            parameters: {
+              paths: {
+                id: true,
+              },
+            },
+          },
         },
       },
     ],
   },
-  getCustomerById: {
-    handler: "handler.getCustomerByIdAction",
+  updateCustomer: {
+    handler: "handler.updateCustomerAction",
     events: [
       {
         http: {
-          method: "get",
+          method: "PUT",
           path: "customer/{id}",
           request: {
             parameters: {
