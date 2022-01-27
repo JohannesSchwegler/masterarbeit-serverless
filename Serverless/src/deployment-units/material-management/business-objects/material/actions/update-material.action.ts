@@ -9,7 +9,7 @@ import { StatusCode } from "@/enums/status-code.enum";
 import { ResponseMessage } from "@/enums/response-message.enum";
 import ResponseModel from "src/shared/response.model";
 import { validateAgainstConstraints } from "@/shared/utils/util";
-import CreateCustomerValidator from "../validators/create.validator";
+import CreateMaterialValidator from "../validators/create.validator";
 
 export const updateMaterialHandler: APIGatewayProxyHandler = async (
   event,
@@ -17,7 +17,7 @@ export const updateMaterialHandler: APIGatewayProxyHandler = async (
   let response;
   const requestData = JSON.parse(event.body);
 
-  return validateAgainstConstraints(requestData, CreateCustomerValidator)
+  return validateAgainstConstraints(requestData, CreateMaterialValidator)
     .then(() => {
       return MATERIAL_RESPOSITORY.update(requestData);
     })
@@ -25,13 +25,13 @@ export const updateMaterialHandler: APIGatewayProxyHandler = async (
       response = new ResponseModel(
         { customer: customer },
         StatusCode.OK,
-        ResponseMessage.CREATE_CUSTOMER_SUCCESS,
+        ResponseMessage.UPDATE_MATERIAL_SUCCESS,
       );
     })
     .catch((error) => {
       response = ResponseModel.setErrorOrResponse(
         error,
-        ResponseMessage.CREATE_CUSTOMER_FAIL,
+        ResponseMessage.UPDATE_MATERIAL_FAIL,
       );
     })
     .then(() => {

@@ -20,13 +20,13 @@ export const deleteMaterialHandler: APIGatewayProxyHandler = async (
       response = new ResponseModel(
         { material },
         StatusCode.OK,
-        ResponseMessage.CREATE_CUSTOMER_SUCCESS,
+        ResponseMessage.DELETE_MATERIAL_SUCCESS,
       );
     })
     .catch((error) => {
       response = ResponseModel.setErrorOrResponse(
         error,
-        ResponseMessage.CREATE_CUSTOMER_FAIL,
+        ResponseMessage.DELETE_MATERIAL_FAIL,
       );
     })
     .then(() => {

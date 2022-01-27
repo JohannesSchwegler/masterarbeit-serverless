@@ -20,13 +20,13 @@ export const deleteCustomerHandler: APIGatewayProxyHandler = async (
       response = new ResponseModel(
         { customer: customer },
         StatusCode.OK,
-        ResponseMessage.CREATE_CUSTOMER_SUCCESS,
+        ResponseMessage.DELETE_CUSTOMER_SUCCESS,
       );
     })
     .catch((error) => {
       response = ResponseModel.setErrorOrResponse(
         error,
-        ResponseMessage.CREATE_CUSTOMER_FAIL,
+        ResponseMessage.DELETE_CUSTOMER_FAIL,
       );
     })
     .then(() => {

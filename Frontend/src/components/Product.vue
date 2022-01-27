@@ -3,16 +3,16 @@
         <div class="product-item-content">
             <div class="p-mb-3">
                 <img
-                    :src="`https://primefaces.org/primevue/showcase/demo/images/product/${product.image}`"
+                    :src="product.image"
                     :alt="product.name"
                     class="product-image"
                 />
             </div>
             <div>
-                <h4 class="p-mb-1">
+                <h2 class="my-3">
                     {{ product.name }}
-                </h4>
-                <h6 class="p-mt-0 p-mb-3">${{ product.price }}</h6>
+                </h2>
+                <h3 class="p-mt-0 p-mb-3">${{ product.price }}</h3>
                 <span
                     :class="
                         'product-badge status-' +

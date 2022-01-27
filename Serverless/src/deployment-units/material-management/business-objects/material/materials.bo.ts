@@ -13,7 +13,7 @@ interface MaterialDto {
   description: string;
   image: string;
   category: string;
-  price: string;
+  price: number;
   quantity: number;
   inventoryStatus: string;
   rating: number;
@@ -26,7 +26,7 @@ export default class Material extends BusinessObject {
   private _description: string;
   private _image: string;
   private _category: string;
-  private _price: string;
+  private _price: number;
   private _quantity: number;
   private _inventoryStatus: string;
   private _rating: number;
@@ -160,12 +160,13 @@ class MaterialRespository implements Access<MaterialDto, number> {
       TableName: process.env.LIST_TABLE,
       Key: {
         PK: Material.pk,
-        SK: `${Material.pk}${id}`,
+        SK: `${Material.pk}#${id}`,
       },
     };
 
     const material = await databaseService.get(params);
-    return (material as Material).toDTO();
+    const materialBusinessObject = material.Item as any;
+    return new Material(materialBusinessObject).toDTO();
   };
 
   update = async (id: number): Promise<MaterialDto> => {
@@ -200,7 +201,7 @@ class MaterialRespository implements Access<MaterialDto, number> {
       TableName: process.env.LIST_TABLE,
       KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :sk)",
       ExpressionAttributeValues: {
-        ":pk": Material.pk,
+        ":pk": "MAT",
         ":sk": Material.pk,
       },
       ExpressionAttributeNames: {

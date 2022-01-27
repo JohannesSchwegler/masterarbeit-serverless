@@ -83,7 +83,10 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title font-weight-bold">
+                                <h3
+                                    style="fontweight: bold"
+                                    class="card-title font-weight-bold"
+                                >
                                     Materialwirtschaft
                                 </h3>
                             </div>
@@ -100,14 +103,14 @@
                             <ErpCustomers />
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12">
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title font-weight-bold">
-                                    Accounting
+                                    Sale Order
                                 </h3>
                             </div>
-                            <ErpAccounting />
+                            <ErpSaleOrder />
                         </div>
                     </div>
 
@@ -128,13 +131,16 @@ import ERPSection from './ErpSection.vue'
 import ErpMaterialsmanagement from '@/routes/erp/material-management/ErpMaterialsmanagement.vue'
 import ErpCustomers from '@/routes/erp/customers/ErpCustomers.vue'
 import ErpAccounting from '@/routes/erp/accounting/ErpAccounting.vue'
+import ErpSaleOrder from '@/routes/erp/sale-order/ErpSaleOrder.vue'
 import axios from 'axios'
+import SaleOrder from './sale-order/ErpSaleOrder.vue'
 export default defineComponent({
     components: {
         ErpAccounting,
         ErpCustomers,
         ErpMaterialsmanagement,
         ERPSection,
+        ErpSaleOrder,
     },
     setup() {
         const services = ref([
@@ -155,12 +161,10 @@ export default defineComponent({
         const restoreDefault = () => {
             console.log('restore')
             axios
-                .post('http://localhost:3000/dev/restore')
-                .then(function (response) {
-                    console.log(response)
-                })
+                .post('http://localhost:3000/dev/reset')
+
                 .catch(function (error) {
-                    console.log(error)
+                    new Error(error)
                 })
         }
 

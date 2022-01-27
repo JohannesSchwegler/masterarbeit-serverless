@@ -1,50 +1,14 @@
 <template>
-    <table
-        v-if="response.data"
-        class="table card-table table-vcenter text-nowrap datatable"
+    <DataTable
+        v-if="response.data && response.data.customers"
+        :value="response.data.customers"
     >
-        <thead>
-            <tr>
-                <th>PK</th>
-                <th>SK</th>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Surname</th>
-                <th>Age</th>
-                <th>City</th>
-                <th>E-Mail</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="customer in response.data.customers" :key="customer.pk">
-                <td>
-                    {{ customer.PK }}
-                </td>
-                <td>{{ customer.SK.slice(0, 5) }} ...</td>
-                <td>
-                    {{ customer.id }}
-                </td>
-                <td>
-                    {{ customer.name }}
-                </td>
-                <td>
-                    {{ customer.surname }}
-                </td>
-                <td>
-                    {{ customer.age }}
-                </td>
-                <td>
-                    {{ customer.city }}
-                </td>
-                <td>
-                    {{ customer.email }}
-                </td>
-            </tr>
-            <tr v-if="!response.data.customers.length">
-                Keine Daten vorhanden
-            </tr>
-        </tbody>
-    </table>
+        <Column field="id" header="ID"></Column>
+        <Column field="name" header="Name"></Column>
+        <Column field="surname" header="Vorname"></Column>
+        <Column field="age" header="Alter"></Column>
+        <Column field="email" header="Mail"></Column>
+    </DataTable>
 </template>
 
 <script lang="ts">

@@ -8,6 +8,7 @@ import { ResponseMessage } from "@/enums/response-message.enum";
 import ResponseModel from "src/shared/response.model";
 import { validateAgainstConstraints } from "@/shared/utils/util";
 import CreateSaleOrder from "./validators/create.validator";
+import { SALE_ORDER_REPOSITORY } from "../../business-objects/salesorder/sales-order.bo";
 
 export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
   event,
@@ -18,28 +19,51 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
 
   const lambda = new AWS.Lambda({
     region: "eu-west-1",
+    endpoint: "http://localhost:3002",
   });
 
-  const sampleData = { number1: 1, number: 2 };
-
   const params = {
-    FunctionName: "serverless-dev-child_lambda",
-    Payload: JSON.stringify(sampleData),
+    InvocationType: "RequestResponse",
+    FunctionName: "master-dev-availabilityCheck",
+    Payload: JSON.stringify({ id: requestData.materialId }),
   };
 
+  let isMaterialAvailable = false;
   try {
-    await lambda.invoke(params, (res) => {
-      console.log(res);
-    });
+    const res = await lambda.invoke(params).promise();
+    const body = JSON.parse(res.Payload as any);
+    isMaterialAvailable = body.available;
   } catch (e) {
     console.log("invokeLambda :: Error: " + e);
   }
 
-  //console.log("res0,", res);
+  if (!isMaterialAvailable) {
+    console.log("not!!!!!", isMaterialAvailable);
+  }
+
+  if (isMaterialAvailable) {
+    console.log("is ava!!!!!", isMaterialAvailable);
+    const sns = new AWS.SNS({
+      endpoint: "http://127.0.0.1:4002",
+      region: "eu-west-1",
+    });
+    sns.publish(
+      {
+        Message: JSON.stringify({
+          default: {
+            customerId: requestData.customerId,
+            amount: 1230,
+          },
+        }),
+        TopicArn: `arn:aws:sns:eu-west-1:123456789012:create-order-topic`,
+      },
+      () => console.log("ping"),
+    );
+  }
 
   return validateAgainstConstraints(requestData, CreateSaleOrder)
     .then(() => {
-      // return SALE_ORDER_REPOSITORY.create(requestData);
+      return SALE_ORDER_REPOSITORY.create(requestData);
     })
     .then((material) => {
       response = new ResponseModel(

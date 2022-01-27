@@ -14,13 +14,13 @@ export const listMaterialHandler: APIGatewayProxyHandler =
         response = new ResponseModel(
           { materials },
           StatusCode.OK,
-          ResponseMessage.GET_CUSTOMER_SUCCESS,
+          ResponseMessage.LIST_MATERIAL_SUCCESS,
         );
       })
       .catch((error) => {
         response = ResponseModel.setErrorOrResponse(
           error,
-          ResponseMessage.GET_CUSTOMER_SUCCESS,
+          ResponseMessage.LIST_MATERIAL_FAIL,
         );
       })
       .then(() => {

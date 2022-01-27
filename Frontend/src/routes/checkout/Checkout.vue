@@ -25,6 +25,7 @@
 
             <div class="col-7">
                 <h2>Zusammenfassung</h2>
+
                 <div v-for="product in cartList" :key="product.id">
                     <Product :product="product" />
                 </div>
@@ -33,7 +34,7 @@
     </div>
 </template>
 
-<script>
+<script lang="ts">
 import { ref } from 'vue'
 import useCart from '../../store/Cart'
 import Product from '../../components/Product.vue'
@@ -48,7 +49,7 @@ export default {
         const onFinishOrder = async () => {
             console.log(cartList.value[0])
             // Default options are marked with *
-            const response = await fetch('http://localhost:3000/dev/order', {
+            fetch('http://localhost:3000/dev/saleOrderProcessing', {
                 method: 'POST', // *GET, POST, PUT, DELETE, etc.
                 headers: {
                     'Content-Type': 'application/json',
@@ -58,7 +59,10 @@ export default {
                     materialId: cartList.value[0].id,
                 }), // body data type must match "Content-Type" header
             })
-            return response.json() // parses JSON response into native JavaScript objects
+                .then((data) => {
+                    console.log(data)
+                })
+                .catch((err) => console.log(err))
         }
 
         return { usernumber, cartList, onFinishOrder }

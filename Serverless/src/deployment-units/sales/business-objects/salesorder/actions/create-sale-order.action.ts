@@ -1,26 +1,22 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
-// Models
-import { MATERIAL_RESPOSITORY } from "../materials.bo";
-// utils
 
-// Enums
 import { StatusCode } from "@/enums/status-code.enum";
 import { ResponseMessage } from "@/enums/response-message.enum";
 import ResponseModel from "src/shared/response.model";
 import { validateAgainstConstraints } from "@/shared/utils/util";
-import CreateMaterialValidator from "../validators/create.validator";
+import CreateSaleOrderValidator from "../validators/create.validator";
+import { SALE_ORDER_REPOSITORY } from "../sales-order.bo";
 
-export const createMaterialHandler: APIGatewayProxyHandler = async (
+export const createSaleOrderHandler: APIGatewayProxyHandler = async (
   event,
 ): Promise<APIGatewayProxyResult> => {
   let response;
   const requestData = JSON.parse(event.body);
 
-  return validateAgainstConstraints(requestData, CreateMaterialValidator)
+  return validateAgainstConstraints(requestData, CreateSaleOrderValidator)
     .then(() => {
-      console.log("create createCustomerHandler");
-      return MATERIAL_RESPOSITORY.create(requestData);
+      return SALE_ORDER_REPOSITORY.create(requestData);
     })
     .then((material) => {
       response = new ResponseModel(
@@ -40,4 +36,4 @@ export const createMaterialHandler: APIGatewayProxyHandler = async (
     });
 };
 
-export const createMaterialAction = createMaterialHandler;
+export const createSaleOrdeAction = createSaleOrderHandler;

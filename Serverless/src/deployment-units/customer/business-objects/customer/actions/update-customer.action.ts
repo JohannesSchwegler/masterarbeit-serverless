@@ -25,13 +25,13 @@ export const updateCustomerHandler: APIGatewayProxyHandler = async (
       response = new ResponseModel(
         { customer: customer },
         StatusCode.OK,
-        ResponseMessage.CREATE_CUSTOMER_SUCCESS,
+        ResponseMessage.UPDATE_CUSTOMER_SUCCESS,
       );
     })
     .catch((error) => {
       response = ResponseModel.setErrorOrResponse(
         error,
-        ResponseMessage.CREATE_CUSTOMER_FAIL,
+        ResponseMessage.UPDATE_CUSTOMER_FAIL,
       );
     })
     .then(() => {

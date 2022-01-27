@@ -1,0 +1,204 @@
+service:
+  name: ${self:custom.serviceName}
+
+plugins:
+  - serverless-offline
+  - serverless-bundle
+  - serverless-dotenv-plugin
+  - serverless-dynamodb-local
+  - serverless-offline-sns
+
+provider:
+  name: aws
+  runtime: "nodejs14.x"
+  stage: "dev"
+  region: "eu-west-1"
+  apiGateway:
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
+
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+    STAGE: "${self:custom.stage}"
+    LIST_TABLE: "${self:custom.list_table}"
+    FUNCTION_ARN: "arn:aws:lambda::${self:provider.region}:function:${self:service}-${self:provider.stage}-readMaterial"
+    snsArn:
+        Ref: SNSTopic
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.LIST_TABLE}"
+    - Effect: Allow
+      Action:
+          - sns:Publish
+          - sns:CreateTopic
+      Resource: { "Fn::Join" : ["", ["arn:aws:sns:${self:provider.region}:", { "Ref" : "AWS::AccountId" }, ":${self:resources.Resources.SNSTopic.Properties.TopicName}" ] ]  }
+
+
+
+
+
+useDotenv: true
+custom:
+  serviceName: master
+  stage: ${opt:stage, self:custom.defaultStage}
+  bucket: master
+
+
+  defaultStage: dev
+  stages:
+    - ${opt:stage}
+    - dev
+    - integration
+    - production
+  region: "${opt:region, self:provider.region}"
+  list_table: "${self:service}-list-table-${opt:stage, self:provider.stage}"
+  tasks_table: "${self:service}-tasks-table-${opt:stage, self:provider.stage}"
+  lambda_prefix: "masterarbeit"
+  table_throughputs:
+    prod: 5
+    default: 5
+
+  table_throughput: "${self:custom.table_throughputs.${self:custom.stage}, self:custom.table_throughputs.default}"
+  dynamodb:
+    stages: ["dev"]
+    start:
+      port: 8008
+      inMemory: true
+      heapInitial: "200m"
+      heapMax: "1g"
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+      // noStart: true
+
+  serverless-offline:
+    httpPort: 3000
+    babelOptions:
+      presets: "env"
+  serverless-offline-sns:
+    port: 4002 # a free port for the sns server to run on
+    debug: true
+
+functions:
+  reset: 
+    handler: handler.restoreDefaultDataAction
+    events: 
+      - http:
+          method: "post"
+          path: "reset"
+  accountIntegration:
+    handler: handler.pong
+    events:
+      - sns: create-order-topic
+
+
+ 
+  saleOrderProcessingAction:
+    handler: "handler.saleOrderProcessingAction"
+    events:
+      - http:
+          method: "post"
+          path: "saleOrderProcessing"
+  availabilityCheck:
+    handler: "handler.availabilityCheckAction"
+    events:
+      - http:
+          method: "post"
+          path: "availabilityCheck"
+
+  # Sale Order
+  listSaleOrder:
+    handler: "handler.listSaleOrderAction"
+    events:
+      - http:
+          method: "get"
+          path: "saleorder"
+  
+  # Material Management
+  listMaterial:
+    handler: "handler.listMaterialAction"
+    events:
+      - http:
+          method: "get"
+          path: "material"
+  createMaterial:
+    handler: "handler.createMaterialAction"
+    events:
+      - http:
+          method: "post"
+          path: "material"
+  readMaterial:
+    name: "readMaterialAction"
+    handler: "handler.readMaterialAction"
+    events:
+      - http:
+          method: "get"
+          path: "material/{id}"
+  listCustomer:
+    handler: "handler.listCustomerAction"
+    events:
+      - http:
+          method: "get"
+          path: "customer"
+  createCustomer:
+    handler: "handler.createCustomerAction"
+    events:
+      - http:
+          method: "post"
+          path: "customer"
+  readCustomer:
+    handler: "handler.readCustomerAction"
+    events:
+      - http:
+          method: "get"
+          path: "customer/{id}"
+  updateCustomer:
+    handler: "handler.updateCustomerAction"
+    events:
+      - http:
+          method: "PUT"
+          path: "customer/{id}"
+
+
+
+package:
+  individually: true
+  exclude:
+    - layer/**
+    - node_modules/**
+    - "!node_modules/babel-runtime/**"
+    - "!node_modules/sharp/**"
+
+resources:
+  Resources:
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: SNS Topic
+        TopicName: ${self:service}-${self:provider.stage}-testtopic
+
+    ListTable: #this is where the logicalID is defined
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Retain
+      Properties:
+        TableName: "${self:provider.environment.LIST_TABLE}"
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

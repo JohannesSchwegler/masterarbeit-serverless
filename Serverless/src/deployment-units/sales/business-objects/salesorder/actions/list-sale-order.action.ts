@@ -1,26 +1,26 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
-import { CUSTOMER_REPOSITORY } from "../customer.bo";
+import { SALE_ORDER_REPOSITORY } from "../sales-order.bo";
 import ResponseModel from "@/shared/response.model";
 import { ResponseMessage } from "@/enums/response-message.enum";
 import { StatusCode } from "@/enums/status-code.enum";
 
-export const listCustomerHandler: APIGatewayProxyHandler =
+export const listSaleOrderHandler: APIGatewayProxyHandler =
   async (): Promise<APIGatewayProxyResult> => {
     let response;
 
-    return CUSTOMER_REPOSITORY.list()
-      .then((customers) => {
+    return SALE_ORDER_REPOSITORY.list()
+      .then((saleorders) => {
         response = new ResponseModel(
-          { customers },
+          { saleorders },
           StatusCode.OK,
-          ResponseMessage.LIST_CUSTOMER_SUCCESS,
+          ResponseMessage.GET_SALEORDER_SUCCESS,
         );
       })
       .catch((error) => {
         response = ResponseModel.setErrorOrResponse(
           error,
-          ResponseMessage.LIST_CUSTOMER_FAIL,
+          ResponseMessage.GET_SALEORDER_FAIL,
         );
       })
       .then(() => {
@@ -28,4 +28,4 @@ export const listCustomerHandler: APIGatewayProxyHandler =
       });
   };
 
-export const listCustomerAction = listCustomerHandler;
+export const listSaleOrderAction = listSaleOrderHandler;

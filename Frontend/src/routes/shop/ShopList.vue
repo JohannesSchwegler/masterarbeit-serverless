@@ -1,12 +1,12 @@
 <template>
     <div class="grid">
-        <div class="col-12 lg:col-4">
-            <div
-                v-if="response.data"
-                v-for="product in response.data.materials"
-                :key="product.id"
-                class="product-item"
-            >
+        <div
+            v-if="response.data"
+            v-for="product in response.data.materials"
+            :key="product.id"
+            class="col-12 lg:col-4"
+        >
+            <div class="product-item">
                 <div class="product-item-content">
                     <div class="p-mb-3">
                         <img
