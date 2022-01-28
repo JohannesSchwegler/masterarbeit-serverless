@@ -24,7 +24,7 @@ export default defineComponent({
     components: { ErpSection },
     setup() {
         const response = useFetch<any[]>(
-            `${process.env.VUE_APP_URL}/dev/material`
+            `${process.env.VITE_APP_URL}/dev/material`
         )
         return { response }
     },

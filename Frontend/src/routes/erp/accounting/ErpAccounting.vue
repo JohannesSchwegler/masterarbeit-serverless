@@ -20,7 +20,7 @@ export default defineComponent({
     setup() {
         console.log('!!! accounting')
         const response = useFetch<any[]>(
-            `${process.env.VUE_APP_URL}/dev/accounting`
+            `${import.meta.env.VITE_APP_UR}/dev/accounting`
         )
 
         return { response }
