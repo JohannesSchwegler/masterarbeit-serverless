@@ -14,8 +14,6 @@ export const readMaterialHandler = async (
   let response;
   const { id } = event.pathParameters;
 
-  console.log("readMaterialHandler!!!");
-
   // Inserts item into DynamoDB table
   return MATERIAL_RESPOSITORY.read(parseInt(id))
     .then((material) => {

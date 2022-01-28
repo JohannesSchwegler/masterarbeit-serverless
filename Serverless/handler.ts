@@ -17,12 +17,14 @@ export {
 export { listSaleOrderAction } from "./src/deployment-units/sales/business-objects/salesorder/actions/index";
 
 export {
-  creatAccountingAction,
+  createAccountingAction,
   readAccountingAction,
   updateAccountingAction,
   deleteAccountingAction,
   listAccountingAction,
 } from "./src/deployment-units/accounting/business-objects/accounting/actions/index";
+
+export { customerInvoiceProcessingAction } from "./src/deployment-units/accounting/index";
 
 export { saleOrderProcessingAction } from "./src/deployment-units/sales/process-components/sale-order-processing/sale-order-processing.pc";
 

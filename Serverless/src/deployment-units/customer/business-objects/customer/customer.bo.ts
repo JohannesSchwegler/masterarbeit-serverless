@@ -176,7 +176,7 @@ class CustomerRespository implements Access<CustomerDto, number> {
     // Inserts item into DynamoDB table
     const customers = await databaseService.query(params);
     const { Items } = customers;
-    console.log("items", Items);
+
     return Items as unknown as Array<CustomerDto>;
   };
 }

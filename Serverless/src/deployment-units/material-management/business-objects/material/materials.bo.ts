@@ -212,7 +212,7 @@ class MaterialRespository implements Access<MaterialDto, number> {
     // Inserts item into DynamoDB table
     const materials = await databaseService.query(params);
     const { Items } = materials;
-    console.log("items", Items);
+
     return Items as unknown as Array<MaterialDto>;
   };
 }

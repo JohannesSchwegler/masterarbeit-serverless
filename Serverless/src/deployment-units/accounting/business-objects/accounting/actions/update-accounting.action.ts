@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
 // Models
-import { SALE_ORDER_REPOSITORY } from "../sales-order.bo";
+import { ACCOUNTING_REPOSITORY } from "../accounting.bo";
 // utils
 
 // Enums
@@ -19,7 +19,7 @@ export const updateAccountingHandler: APIGatewayProxyHandler = async (
 
   return validateAgainstConstraints(requestData, CreateSaleOrderValidator)
     .then(() => {
-      return SALE_ORDER_REPOSITORY.update(requestData);
+      return ACCOUNTING_REPOSITORY.update(requestData);
     })
     .then((customer) => {
       response = new ResponseModel(

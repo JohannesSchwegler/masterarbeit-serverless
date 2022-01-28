@@ -1,22 +1,22 @@
-import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
-import "source-map-support/register";
-
-import { StatusCode } from "@/enums/status-code.enum";
 import { ResponseMessage } from "@/enums/response-message.enum";
-import ResponseModel from "src/shared/response.model";
+import { StatusCode } from "@/enums/status-code.enum";
 import { validateAgainstConstraints } from "@/shared/utils/util";
-import CreateSaleOrderValidator from "../validators/create.validator";
-import { SALE_ORDER_REPOSITORY } from "../sales-order.bo";
+import { APIGatewayProxyResult } from "aws-lambda";
+import "source-map-support/register";
+import ResponseModel from "src/shared/response.model";
+import { ACCOUNTING_REPOSITORY } from "../accounting.bo";
+import CreateAccountingValidator from "../validators/create.validator";
 
-export const createAccountingHandler: APIGatewayProxyHandler = async (
+export const createAccountingHandler = async (
   event,
 ): Promise<APIGatewayProxyResult> => {
   let response;
-  const requestData = JSON.parse(event.body);
+  console.log(event);
+  const requestData = event.body;
 
-  return validateAgainstConstraints(requestData, CreateSaleOrderValidator)
+  return validateAgainstConstraints(requestData, CreateAccountingValidator)
     .then(() => {
-      return SALE_ORDER_REPOSITORY.create(requestData);
+      return ACCOUNTING_REPOSITORY.create(requestData);
     })
     .then((material) => {
       response = new ResponseModel(
@@ -36,4 +36,4 @@ export const createAccountingHandler: APIGatewayProxyHandler = async (
     });
 };
 
-export const creatAccountingAction = createAccountingHandler;
+export const createAccountingAction = createAccountingHandler;

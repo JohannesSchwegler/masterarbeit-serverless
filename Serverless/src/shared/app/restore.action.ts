@@ -57,7 +57,6 @@ export const restoreDefaultDataAction = restoreDefaultDataHandler;
 
 const createMultiple = async (data: Array<any>) => {
   const dataToList = data.map((item) => {
-    console.log(item);
     return {
       PutRequest: {
         Item: {
@@ -71,9 +70,6 @@ const createMultiple = async (data: Array<any>) => {
       [process.env.LIST_TABLE]: dataToList,
     },
   };
-
-  console.log(dataToList);
-  console.log("params", params.RequestItems.LIST_TABLE);
 
   const accounts = await databaseService.batch_write_items(params);
   return accounts;

@@ -8,7 +8,7 @@ export const availabilityCheckHandler = async (event): Promise<any> => {
   // Inserts item into DynamoDB table
   return MATERIAL_RESPOSITORY.read(id)
     .then((material) => {
-      if (material.quantity > 1) return { available: true };
+      if (material.quantity > 1) return { available: true, material };
     })
     .catch(() => {
       return { available: false };

@@ -37,17 +37,20 @@ type GetItemOutput = AWS.DynamoDB.DocumentClient.GetItemOutput;
 type DeleteItem = AWS.DynamoDB.DocumentClient.DeleteItemInput;
 type DeleteItemOutput = AWS.DynamoDB.DocumentClient.DeleteItemOutput;
 
-const config: IConfig = { region: "${self:custom.region}" };
-if (process.env.STAGE === process.env.DYNAMODB_LOCAL_STAGE) {
-  config.accessKeyId = process.env.DYNAMODB_LOCAL_ACCESS_KEY_ID;
-  config.secretAccessKey = process.env.DYNAMODB_LOCAL_SECRET_ACCESS_KEY;
-  config.endpoint = process.env.DYNAMODB_LOCAL_ENDPOINT;
-
-  if (process.env.IS_OFFLINE) {
-    config.region = "localhost";
-  }
-}
-console.log(config);
+const config: IConfig = { region: process.env.REGION };
+// if (
+//   process.env.STAGE === process.env.DYNAMODB_LOCAL_STAGE &&
+//   process.env.DYNAMODB_LOCAL_STAGE === "dev"
+// ) {
+//   config.accessKeyId = process.env.DYNAMODB_LOCAL_ACCESS_KEY_ID;
+//   config.secretAccessKey = process.env.DYNAMODB_LOCAL_SECRET_ACCESS_KEY;
+//   config.endpoint = process.env.DYNAMODB_LOCAL_ENDPOINT;
+//   config.region = process.env.REGION;
+//   console.log("!!!!!", process.env.IS_OFFLINE);
+//   if (process.env.IS_OFFLINE && process.env.IS_OFFLINE === "true") {
+//     config.region = "localhost";
+//   }
+// }
 AWS.config.update(config);
 
 const documentClient = new AWS.DynamoDB.DocumentClient({

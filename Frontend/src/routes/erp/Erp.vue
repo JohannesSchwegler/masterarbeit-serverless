@@ -46,7 +46,7 @@
                                     Accounting
                                 </h3>
                             </div>
-                            <ErpSaleOrder />
+                            <ErpAccounting />
                         </div>
                     </div>
 
@@ -99,7 +99,7 @@ export default defineComponent({
         const restoreDefault = () => {
             console.log('restore')
             axios
-                .post('http://localhost:3000/dev/reset')
+                .post(`${process.env.VUE_APP_URL}/dev/reset`)
                 .then(() => location.reload())
 
                 .catch(function (error) {

@@ -5,10 +5,10 @@ export default {
     },
     type: "string",
   },
-  materialId: {
+  amount: {
     presence: {
       allowEmpty: false,
     },
-    type: "string",
+    type: "number",
   },
 };

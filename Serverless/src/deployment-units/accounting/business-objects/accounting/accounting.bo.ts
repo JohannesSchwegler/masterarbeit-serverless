@@ -55,7 +55,7 @@ export default class Accounting extends BusinessObject {
   }
 }
 
-class SaleOrderRespository implements Access<AccountingDto, number> {
+class AccountingRespository implements Access<AccountingDto, number> {
   create = async (requestData: any): Promise<AccountingDto> => {
     const accountingBusinessObject = new Accounting(requestData);
     const documentClient = new AWS.DynamoDB.DocumentClient({
@@ -159,5 +159,5 @@ class SaleOrderRespository implements Access<AccountingDto, number> {
     return Items as unknown as Array<AccountingDto>;
   };
 }
-const SALE_ORDER_REPOSITORY = new SaleOrderRespository();
-export { SALE_ORDER_REPOSITORY };
+const ACCOUNTING_REPOSITORY = new AccountingRespository();
+export { ACCOUNTING_REPOSITORY };

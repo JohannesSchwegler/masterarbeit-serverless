@@ -7,6 +7,7 @@
             <template #body="{ data }">
                 <img :src="data.image" width="30" /> </template
         ></Column>
+        <Column field="id" header="ID"></Column>
         <Column field="code" header="Code"></Column>
         <Column field="name" header="Name"></Column>
         <Column field="price" header="Preis"></Column>
@@ -22,14 +23,10 @@ import useFetch from '@/shared/composables/useFetch'
 export default defineComponent({
     components: { ErpSection },
     setup() {
-        const response = useFetch<any[]>('http://localhost:3000/dev/material')
-
+        const response = useFetch<any[]>(
+            `${process.env.VUE_APP_URL}/dev/material`
+        )
         return { response }
     },
 })
 </script>
-
-<style module lang="scss">
-.erp {
-}
-</style>

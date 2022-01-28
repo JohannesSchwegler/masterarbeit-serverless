@@ -6,7 +6,7 @@ import { StatusCode } from "@/enums/status-code.enum";
 import { APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
 import ResponseModel from "src/shared/response.model";
-import { SALE_ORDER_REPOSITORY } from "../sales-order.bo";
+import { ACCOUNTING_REPOSITORY } from "../accounting.bo";
 
 export const readAccountingHandler = async (
   event,
@@ -17,11 +17,10 @@ export const readAccountingHandler = async (
   console.log("readMaterialHandler!!!");
 
   // Inserts item into DynamoDB table
-  return SALE_ORDER_REPOSITORY.read(parseInt(id))
-    .then((material) => {
-      // Set Success Response
+  return ACCOUNTING_REPOSITORY.read(parseInt(id))
+    .then((accounting) => {
       response = new ResponseModel(
-        { material },
+        { accounting },
         StatusCode.OK,
         ResponseMessage.GET_MATERIAL_SUCCESS,
       );

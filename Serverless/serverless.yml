@@ -21,7 +21,6 @@ provider:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
     STAGE: "${self:custom.stage}"
     LIST_TABLE: "${self:custom.list_table}"
-    FUNCTION_ARN: "arn:aws:lambda::${self:provider.region}:function:${self:service}-${self:provider.stage}-readMaterial"
     snsArn:
       Ref: SNSTopic
   iamRoleStatements:
@@ -99,10 +98,7 @@ functions:
       - http:
           method: "post"
           path: "reset"
-  accountIntegration:
-    handler: handler.pong
-    events:
-      - sns: create-order-topic
+ 
 
   saleOrderProcessingAction:
     handler: "handler.saleOrderProcessingAction"
@@ -172,6 +168,10 @@ functions:
           path: "customer/{id}"
 
   # Accounting
+  createCustomerInvoice:
+    handler: handler.customerInvoiceProcessingAction
+    events:
+      - sns: create-customer-invoice
   listAccounting:
     handler: "handler.listAccountingAction"
     events:

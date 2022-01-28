@@ -19,7 +19,9 @@ export default defineComponent({
     components: { ErpSection },
     setup() {
         console.log('!!! saleorder')
-        const response = useFetch<any[]>('http://localhost:3000/dev/saleorder')
+        const response = useFetch<any[]>(
+            `${process.env.VUE_APP_URL}/dev/saleorder`
+        )
 
         return { response }
     },

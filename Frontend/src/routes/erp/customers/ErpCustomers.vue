@@ -24,7 +24,9 @@ interface Pokemon {
 export default defineComponent({
     components: { ErpSection },
     setup() {
-        const response = useFetch<any[]>('http://localhost:3000/dev/customer')
+        const response = useFetch<any[]>(
+            `${process.env.VUE_APP_URL}/dev/customer`
+        )
 
         return { response }
     },

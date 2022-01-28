@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from "aws-lambda";
 import "source-map-support/register";
 // Models
-import { SALE_ORDER_REPOSITORY } from "../sales-order.bo";
+import { ACCOUNTING_REPOSITORY } from "../accounting.bo";
 // utils
 
 // Enums
@@ -15,7 +15,7 @@ export const deleteAccountingHandler: APIGatewayProxyHandler = async (
   let response;
   const requestData = JSON.parse(event.body);
 
-  return SALE_ORDER_REPOSITORY.delete(requestData)
+  return ACCOUNTING_REPOSITORY.delete(requestData)
     .then((material) => {
       response = new ResponseModel(
         { material },

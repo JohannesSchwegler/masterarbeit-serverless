@@ -9,12 +9,10 @@ import ResponseModel from "src/shared/response.model";
 import { validateAgainstConstraints } from "@/shared/utils/util";
 import CreateSaleOrder from "./validators/create.validator";
 import { SALE_ORDER_REPOSITORY } from "../../business-objects/salesorder/sales-order.bo";
-import { async } from "validate.js";
 
 export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
   event,
 ): Promise<APIGatewayProxyResult> => {
-  console.log("!!!!!!! saleOrderProcessingHandler");
   let response;
   const requestData = JSON.parse(event.body);
 
@@ -32,10 +30,12 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
       };
 
       let isMaterialAvailable = false;
+      let material = null;
       try {
         const res = await lambda.invoke(params).promise();
         const body = JSON.parse(res.Payload as any);
         isMaterialAvailable = body.available;
+        material = body.material;
       } catch (e) {
         console.log("invokeLambda :: Error: " + e);
       }
@@ -55,10 +55,10 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
             Message: JSON.stringify({
               default: {
                 customerId: requestData.customerId,
-                amount: 1230,
+                amount: material.price,
               },
             }),
-            TopicArn: `arn:aws:sns:eu-west-1:123456789012:create-order-topic`,
+            TopicArn: `arn:aws:sns:eu-west-1:123456789012:create-customer-invoice`,
           },
           () => console.log("ping"),
         );

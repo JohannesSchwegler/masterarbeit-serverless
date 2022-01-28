@@ -71,16 +71,28 @@
         }
       }
     },
-    "ChildLambdaLogGroup": {
+    "ResetLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/master-dev-childLambda"
+        "LogGroupName": "/aws/lambda/master-dev-reset"
       }
     },
     "SaleOrderProcessingActionLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
         "LogGroupName": "/aws/lambda/master-dev-saleOrderProcessingAction"
+      }
+    },
+    "AvailabilityCheckLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-availabilityCheck"
+      }
+    },
+    "ListSaleOrderLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-listSaleOrder"
       }
     },
     "ListMaterialLogGroup": {
@@ -125,6 +137,36 @@
         "LogGroupName": "/aws/lambda/master-dev-updateCustomer"
       }
     },
+    "CreateCustomerInvoiceLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-createCustomerInvoice"
+      }
+    },
+    "ListAccountingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-listAccounting"
+      }
+    },
+    "CreateAccountingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-createAccounting"
+      }
+    },
+    "ReadAccountingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-readAccounting"
+      }
+    },
+    "UpdateAccountingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/master-dev-updateAccounting"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -134,23 +176,37 @@
             {
               "Effect": "Allow",
               "Principal": {
-                "Service": ["lambda.amazonaws.com"]
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
               },
-              "Action": ["sts:AssumeRole"]
+              "Action": [
+                "sts:AssumeRole"
+              ]
             }
           ]
         },
         "Policies": [
           {
             "PolicyName": {
-              "Fn::Join": ["-", ["master", "dev", "lambda"]]
+              "Fn::Join": [
+                "-",
+                [
+                  "master",
+                  "dev",
+                  "lambda"
+                ]
+              ]
             },
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": [
                 {
                   "Effect": "Allow",
-                  "Action": ["logs:CreateLogStream", "logs:CreateLogGroup"],
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup"
+                  ],
                   "Resource": [
                     {
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/readMaterialAction:*"
@@ -162,7 +218,9 @@
                 },
                 {
                   "Effect": "Allow",
-                  "Action": ["logs:PutLogEvents"],
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
                   "Resource": [
                     {
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/readMaterialAction:*:*"
@@ -183,6 +241,25 @@
                     "dynamodb:DeleteItem"
                   ],
                   "Resource": "arn:aws:dynamodb:eu-west-1:*:table/LIST_TABLE"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:Publish",
+                    "sns:CreateTopic"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:sns:eu-west-1:",
+                        {
+                          "Ref": "AWS::AccountId"
+                        },
+                        ":master-dev-testtopic"
+                      ]
+                    ]
+                  }
                 }
               ]
             }
@@ -204,18 +281,18 @@
         }
       }
     },
-    "ChildLambdaLambdaFunction": {
+    "ResetLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/childLambda.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/reset.zip"
         },
-        "Handler": "handler.mainHandler",
+        "Handler": "handler.restoreDefaultDataAction",
         "Runtime": "nodejs14.x",
-        "FunctionName": "master-dev-childLambda",
+        "FunctionName": "master-dev-reset",
         "MemorySize": 1024,
         "Timeout": 6,
         "Environment": {
@@ -223,12 +300,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -237,10 +317,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["ChildLambdaLogGroup"]
+      "DependsOn": [
+        "ResetLogGroup"
+      ]
     },
     "SaleOrderProcessingActionLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -249,7 +334,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/saleOrderProcessingAction.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/saleOrderProcessingAction.zip"
         },
         "Handler": "handler.saleOrderProcessingAction",
         "Runtime": "nodejs14.x",
@@ -261,12 +346,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -275,10 +363,107 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["SaleOrderProcessingActionLogGroup"]
+      "DependsOn": [
+        "SaleOrderProcessingActionLogGroup"
+      ]
+    },
+    "AvailabilityCheckLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/availabilityCheck.zip"
+        },
+        "Handler": "handler.availabilityCheckAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-availabilityCheck",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "AvailabilityCheckLogGroup"
+      ]
+    },
+    "ListSaleOrderLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/listSaleOrder.zip"
+        },
+        "Handler": "handler.listSaleOrderAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-listSaleOrder",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ListSaleOrderLogGroup"
+      ]
     },
     "ListMaterialLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -287,7 +472,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/listMaterial.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/listMaterial.zip"
         },
         "Handler": "handler.listMaterialAction",
         "Runtime": "nodejs14.x",
@@ -299,12 +484,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -313,10 +501,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["ListMaterialLogGroup"]
+      "DependsOn": [
+        "ListMaterialLogGroup"
+      ]
     },
     "CreateMaterialLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -325,7 +518,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/createMaterial.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/createMaterial.zip"
         },
         "Handler": "handler.createMaterialAction",
         "Runtime": "nodejs14.x",
@@ -337,12 +530,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -351,10 +547,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["CreateMaterialLogGroup"]
+      "DependsOn": [
+        "CreateMaterialLogGroup"
+      ]
     },
     "ReadMaterialLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -363,7 +564,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/readMaterial.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/readMaterial.zip"
         },
         "Handler": "handler.readMaterialAction",
         "Runtime": "nodejs14.x",
@@ -375,12 +576,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -389,10 +593,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["ReadMaterialLogGroup"]
+      "DependsOn": [
+        "ReadMaterialLogGroup"
+      ]
     },
     "ListCustomerLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -401,7 +610,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/listCustomer.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/listCustomer.zip"
         },
         "Handler": "handler.listCustomerAction",
         "Runtime": "nodejs14.x",
@@ -413,12 +622,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -427,10 +639,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["ListCustomerLogGroup"]
+      "DependsOn": [
+        "ListCustomerLogGroup"
+      ]
     },
     "CreateCustomerLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -439,7 +656,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/createCustomer.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/createCustomer.zip"
         },
         "Handler": "handler.createCustomerAction",
         "Runtime": "nodejs14.x",
@@ -451,12 +668,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -465,10 +685,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["CreateCustomerLogGroup"]
+      "DependsOn": [
+        "CreateCustomerLogGroup"
+      ]
     },
     "ReadCustomerLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -477,7 +702,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/readCustomer.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/readCustomer.zip"
         },
         "Handler": "handler.readCustomerAction",
         "Runtime": "nodejs14.x",
@@ -489,12 +714,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -503,10 +731,15 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["ReadCustomerLogGroup"]
+      "DependsOn": [
+        "ReadCustomerLogGroup"
+      ]
     },
     "UpdateCustomerLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -515,7 +748,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/master/dev/1642932387225-2022-01-23T10:06:27.225Z/updateCustomer.zip"
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/updateCustomer.zip"
         },
         "Handler": "handler.updateCustomerAction",
         "Runtime": "nodejs14.x",
@@ -527,12 +760,15 @@
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
             "STAGE": "dev",
             "LIST_TABLE": "LIST_TABLE",
-            "FUNCTION_ARN": "arn:aws:lambda::eu-west-1:function:master-dev-readMaterial",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
             "REGION": "eu-west-1",
             "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
             "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
             "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
             "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
             "JWKS_URI": "",
             "AUDIENCE": "",
             "TOKEN_ISSUER": "",
@@ -541,99 +777,404 @@
           }
         },
         "Role": {
-          "Fn::GetAtt": ["IamRoleLambdaExecution", "Arn"]
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
         }
       },
-      "DependsOn": ["UpdateCustomerLogGroup"]
+      "DependsOn": [
+        "UpdateCustomerLogGroup"
+      ]
     },
-    "ChildLambdaLambdaVersiont1mJeocIvUJBqFlaFkdjvfcDVhKsj9mGTvUddpadbIQ": {
+    "CreateCustomerInvoiceLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/createCustomerInvoice.zip"
+        },
+        "Handler": "handler.customerInvoiceProcessingAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-createCustomerInvoice",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateCustomerInvoiceLogGroup"
+      ]
+    },
+    "ListAccountingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/listAccounting.zip"
+        },
+        "Handler": "handler.listAccountingAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-listAccounting",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ListAccountingLogGroup"
+      ]
+    },
+    "CreateAccountingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/createAccounting.zip"
+        },
+        "Handler": "handler.createAccountingAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-createAccounting",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateAccountingLogGroup"
+      ]
+    },
+    "ReadAccountingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/readAccounting.zip"
+        },
+        "Handler": "handler.readAccountingAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-readAccounting",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ReadAccountingLogGroup"
+      ]
+    },
+    "UpdateAccountingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/master/dev/1643397080008-2022-01-28T19:11:20.008Z/updateAccounting.zip"
+        },
+        "Handler": "handler.updateAccountingAction",
+        "Runtime": "nodejs14.x",
+        "FunctionName": "master-dev-updateAccounting",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "STAGE": "dev",
+            "LIST_TABLE": "LIST_TABLE",
+            "snsArn": {
+              "Ref": "SNSTopic"
+            },
+            "REGION": "eu-west-1",
+            "DYNAMODB_LOCAL_ENDPOINT": "http://localhost:8008",
+            "DYNAMODB_LOCAL_ACCESS_KEY_ID": "nfy73s",
+            "DYNAMODB_LOCAL_SECRET_ACCESS_KEY": "7g3zsb",
+            "DYNAMODB_LOCAL_STAGE": "dev",
+            "IS_OFFLINE": "false",
+            "JWKS_URI": "",
+            "AUDIENCE": "",
+            "TOKEN_ISSUER": "",
+            "TOKEN": "",
+            "SLS_DEBUG": "*"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "UpdateAccountingLogGroup"
+      ]
+    },
+    "ResetLambdaVersionbnmTl16ppyZkSNFYTVR2QfUR5lQydojyidosiV1zbk": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "ChildLambdaLambdaFunction"
+          "Ref": "ResetLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "D5Ob0kttGfxDPVZmpEi9hebqHhgUrJWH5r53uBmzoEE="
       }
     },
-    "SaleOrderProcessingActionLambdaVersionKra1Eqisl4uxEJr4d8x8lUNOXBHjRwxJBzIdPyVGuc": {
+    "SaleOrderProcessingActionLambdaVersioncw51DyOzu3lXWo5fBx9md2QJ27Q1tJhxMixAXZGqM": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "SaleOrderProcessingActionLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "en66TY13JD1xf27Z4umdd2/UxMfXVK+bJbxr0buBT1Y="
       }
     },
-    "ListMaterialLambdaVersionfu4YA5jkdUi7D0IqcrEuHeLETadqXQOA38PH1362ww": {
+    "ListMaterialLambdaVersionDEnhXP6avmcAqARfDKORX1BOxqwvnX82jJ8g0x0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ListMaterialLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "Uyr/vHAq0bEzgCgXIpa9RAG8KFD23cVxXj3qjXK0LyQ="
       }
     },
-    "ReadMaterialLambdaVersionvh2SiXSBQA1CNnwjqOyBAAeRHx7yuvHuAGV9yGflMYA": {
+    "AvailabilityCheckLambdaVersionZRntAOv1InhOP0bCY5IfJ1cVL0GgPW0tryjuibLcfU": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "ReadMaterialLambdaFunction"
+          "Ref": "AvailabilityCheckLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "jB7R+K9cqBYq2+IeG08oARFBe7AyWRlhuc5vzQyEkRk="
       }
     },
-    "ListCustomerLambdaVersionIGLD0U3FsGdiJMiCkO0TZPn8IvR9jhchCD1JsHUnE": {
+    "ListCustomerLambdaVersionfnDnTDEpzZIxRLc0isEPZHrFUzL1dUUR1ChzMVsbP3g": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ListCustomerLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "D5Ob0kttGfxDPVZmpEi9hebqHhgUrJWH5r53uBmzoEE="
       }
     },
-    "CreateMaterialLambdaVersionSTW7hEc1DjfZIBf3CzpvOD1rB80HVCa6OmazSEPMoN0": {
+    "CreateMaterialLambdaVersionk9bM24lNQXDbruTlCEB6cAmPZbB5B3akJl7kVSJXo1w": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateMaterialLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "ElKPCpr1tDx1QS3cb3Z5sdgo/kOO24pY3mC57ZnTlnY="
       }
     },
-    "CreateCustomerLambdaVersionc23t1nAyrEASonRzCtm9icF6fcT2LUWASlQ8yIqI": {
+    "ReadMaterialLambdaVersionV50gZ4HAeeqSN9UzmNQC5DNrzNyo0bGql2SzsqTac": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ReadMaterialLambdaFunction"
+        },
+        "CodeSha256": "FY4SiOW/l+5lUREKv8XFrGfJZJhyT0NQ4/jkYAKMUz8="
+      }
+    },
+    "CreateCustomerLambdaVersion51sExz0215o3a6JxDM9SctZMjVuOa8wS0OdHgSLDjE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CreateCustomerLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "en66TY13JD1xf27Z4umdd2/UxMfXVK+bJbxr0buBT1Y="
       }
     },
-    "ReadCustomerLambdaVersion7YCurYvoSl86JfIfT4GRRmhRSqeLb655dgg0cLwQ7w": {
+    "ReadCustomerLambdaVersionq7ym5WKecrtHwE3OacZWrX9li65OtJifdUjgyKbLQW4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ReadCustomerLambdaFunction"
         },
-        "CodeSha256": "QDiIBOZDiJWI4ywmDyutPStsPSe3ITt0eX/E2Fs0Ugk="
+        "CodeSha256": "3/nOjJTXM4Zu8IsRLSkSU9a0HBJwWJzm5bK7tMb3jyM="
       }
     },
-    "UpdateCustomerLambdaVersionjHiRq1k0kqNX3WAnqjcNnOMXtwrBhCih2o1fiGGRO8U": {
+    "ListSaleOrderLambdaVersion4he3NWnD2GzJdQVv6NdgRqGp9aB3kExPstGKOV1hQY": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListSaleOrderLambdaFunction"
+        },
+        "CodeSha256": "D5Ob0kttGfxDPVZmpEi9hebqHhgUrJWH5r53uBmzoEE="
+      }
+    },
+    "ListAccountingLambdaVersion4xur0rM7pExsJlAwlvX1wqjc6of1kJWZTR24H5WMo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListAccountingLambdaFunction"
+        },
+        "CodeSha256": "QqmRAr/cBH9oxJW75MIwz3AF2/gzxzFRsIKDaOqY8j4="
+      }
+    },
+    "CreateCustomerInvoiceLambdaVersionbeKmrvozH2ciwmtNBxoXN48Q4ZVL6DMqf8dXEVfzSJY": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateCustomerInvoiceLambdaFunction"
+        },
+        "CodeSha256": "D5Ob0kttGfxDPVZmpEi9hebqHhgUrJWH5r53uBmzoEE="
+      }
+    },
+    "CreateAccountingLambdaVersionj1h1Xik9zHKuB9Flfznu3ebOmGigGiO1KgqVxbqBo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateAccountingLambdaFunction"
+        },
+        "CodeSha256": "QqmRAr/cBH9oxJW75MIwz3AF2/gzxzFRsIKDaOqY8j4="
+      }
+    },
+    "UpdateCustomerLambdaVersionJddASRrJd2EgybHdRrajlYEA6LGnJKQdwLRnYgLsLc": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "UpdateCustomerLambdaFunction"
         },
-        "CodeSha256": "oJiOEDo7PUxDqu9Dz01v2gwnH6z1kGlgmYOrl6FciR0="
+        "CodeSha256": "D5Ob0kttGfxDPVZmpEi9hebqHhgUrJWH5r53uBmzoEE="
+      }
+    },
+    "ReadAccountingLambdaVersionkp5CoPwff9mct7S2nvod4327VAZgxPXCq3ghTOFA4": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ReadAccountingLambdaFunction"
+        },
+        "CodeSha256": "+Ir8JrM4z+FFuUiXYScOovsce88O2JwKyZl0ayu/Bmw="
+      }
+    },
+    "UpdateAccountingLambdaVersionCxZznRsbZylelCeeo8zulpjp7NL0pwzZI2NBYiA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "UpdateAccountingLambdaFunction"
+        },
+        "CodeSha256": "QqmRAr/cBH9oxJW75MIwz3AF2/gzxzFRsIKDaOqY8j4="
       }
     },
     "ApiGatewayRestApi": {
@@ -641,19 +1182,69 @@
       "Properties": {
         "Name": "master-dev",
         "EndpointConfiguration": {
-          "Types": ["EDGE"]
+          "Types": [
+            "EDGE"
+          ]
         },
         "Policy": "",
         "MinimumCompressionSize": 1024
+      }
+    },
+    "ApiGatewayResourceReset": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "reset",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
       }
     },
     "ApiGatewayResourceSaleorderprocessing": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
         "ParentId": {
-          "Fn::GetAtt": ["ApiGatewayRestApi", "RootResourceId"]
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
         },
         "PathPart": "saleOrderProcessing",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceAvailabilitycheck": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "availabilityCheck",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceSaleorder": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "saleorder",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -663,7 +1254,10 @@
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
         "ParentId": {
-          "Fn::GetAtt": ["ApiGatewayRestApi", "RootResourceId"]
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
         },
         "PathPart": "material",
         "RestApiId": {
@@ -687,7 +1281,10 @@
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
         "ParentId": {
-          "Fn::GetAtt": ["ApiGatewayRestApi", "RootResourceId"]
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
         },
         "PathPart": "customer",
         "RestApiId": {
@@ -706,6 +1303,79 @@
           "Ref": "ApiGatewayRestApi"
         }
       }
+    },
+    "ApiGatewayResourceAccounting": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "accounting",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceAccountingIdVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceAccounting"
+        },
+        "PathPart": "{id}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodResetPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceReset"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ResetLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ResetLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodSaleorderprocessingPost": {
       "Type": "AWS::ApiGateway::Method",
@@ -749,7 +1419,101 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["SaleOrderProcessingActionLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "SaleOrderProcessingActionLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodAvailabilitycheckPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAvailabilitycheck"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "AvailabilityCheckLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "AvailabilityCheckLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodSaleorderGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceSaleorder"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ListSaleOrderLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ListSaleOrderLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodMaterialGet": {
       "Type": "AWS::ApiGateway::Method",
@@ -781,7 +1545,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["ListMaterialLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "ListMaterialLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -790,7 +1557,9 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["ListMaterialLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "ListMaterialLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodMaterialPost": {
       "Type": "AWS::ApiGateway::Method",
@@ -822,7 +1591,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["CreateMaterialLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "CreateMaterialLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -831,7 +1603,9 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["CreateMaterialLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "CreateMaterialLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodMaterialIdVarGet": {
       "Type": "AWS::ApiGateway::Method",
@@ -863,7 +1637,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["ReadMaterialLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "ReadMaterialLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -872,7 +1649,9 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["ReadMaterialLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "ReadMaterialLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodCustomerGet": {
       "Type": "AWS::ApiGateway::Method",
@@ -904,7 +1683,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["ListCustomerLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "ListCustomerLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -913,7 +1695,9 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["ListCustomerLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "ListCustomerLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodCustomerPost": {
       "Type": "AWS::ApiGateway::Method",
@@ -945,7 +1729,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["CreateCustomerLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "CreateCustomerLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -954,7 +1741,9 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["CreateCustomerLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "CreateCustomerLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodCustomerIdVarGet": {
       "Type": "AWS::ApiGateway::Method",
@@ -986,7 +1775,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["ReadCustomerLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "ReadCustomerLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -995,7 +1787,9 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["ReadCustomerLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "ReadCustomerLambdaPermissionApiGateway"
+      ]
     },
     "ApiGatewayMethodCustomerIdVarPut": {
       "Type": "AWS::ApiGateway::Method",
@@ -1027,7 +1821,10 @@
                 },
                 ":lambda:path/2015-03-31/functions/",
                 {
-                  "Fn::GetAtt": ["UpdateCustomerLambdaFunction", "Arn"]
+                  "Fn::GetAtt": [
+                    "UpdateCustomerLambdaFunction",
+                    "Arn"
+                  ]
                 },
                 "/invocations"
               ]
@@ -1036,9 +1833,195 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": ["UpdateCustomerLambdaPermissionApiGateway"]
+      "DependsOn": [
+        "UpdateCustomerLambdaPermissionApiGateway"
+      ]
     },
-    "ApiGatewayDeployment1642932352011": {
+    "ApiGatewayMethodAccountingGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAccounting"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ListAccountingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ListAccountingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodAccountingPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAccounting"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateAccountingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CreateAccountingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodAccountingIdVarGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAccountingIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ReadAccountingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ReadAccountingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodAccountingIdVarPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceAccountingIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "UpdateAccountingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "UpdateAccountingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1643397019071": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1047,21 +2030,142 @@
         "StageName": "dev"
       },
       "DependsOn": [
+        "ApiGatewayMethodResetPost",
         "ApiGatewayMethodSaleorderprocessingPost",
+        "ApiGatewayMethodAvailabilitycheckPost",
+        "ApiGatewayMethodSaleorderGet",
         "ApiGatewayMethodMaterialGet",
         "ApiGatewayMethodMaterialPost",
         "ApiGatewayMethodMaterialIdVarGet",
         "ApiGatewayMethodCustomerGet",
         "ApiGatewayMethodCustomerPost",
         "ApiGatewayMethodCustomerIdVarGet",
-        "ApiGatewayMethodCustomerIdVarPut"
+        "ApiGatewayMethodCustomerIdVarPut",
+        "ApiGatewayMethodAccountingGet",
+        "ApiGatewayMethodAccountingPost",
+        "ApiGatewayMethodAccountingIdVarGet",
+        "ApiGatewayMethodAccountingIdVarPut"
       ]
+    },
+    "ResetLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ResetLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
     },
     "SaleOrderProcessingActionLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["SaleOrderProcessingActionLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "SaleOrderProcessingActionLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "AvailabilityCheckLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AvailabilityCheckLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ListSaleOrderLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ListSaleOrderLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1095,7 +2199,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["ListMaterialLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "ListMaterialLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1129,7 +2236,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["CreateMaterialLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "CreateMaterialLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1163,7 +2273,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["ReadMaterialLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "ReadMaterialLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1197,7 +2310,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["ListCustomerLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "ListCustomerLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1231,7 +2347,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["CreateCustomerLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "CreateCustomerLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1265,7 +2384,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["ReadCustomerLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "ReadCustomerLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1299,7 +2421,10 @@
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
-          "Fn::GetAtt": ["UpdateCustomerLambdaFunction", "Arn"]
+          "Fn::GetAtt": [
+            "UpdateCustomerLambdaFunction",
+            "Arn"
+          ]
         },
         "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
@@ -1327,6 +2452,212 @@
             ]
           ]
         }
+      }
+    },
+    "ListAccountingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ListAccountingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateAccountingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateAccountingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ReadAccountingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ReadAccountingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "UpdateAccountingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "UpdateAccountingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "SNSTopicCreatecustomerinvoice": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "create-customer-invoice",
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Fn::GetAtt": [
+                "CreateCustomerInvoiceLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Protocol": "lambda"
+          }
+        ]
+      }
+    },
+    "CreateCustomerInvoiceLambdaPermissionCreatecustomerinvoiceSNS": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateCustomerInvoiceLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":sns:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              "create-customer-invoice"
+            ]
+          ]
+        }
+      }
+    },
+    "SNSTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "DisplayName": "SNS Topic",
+        "TopicName": "master-dev-testtopic"
       }
     },
     "ListTable": {
@@ -1370,19 +2701,19 @@
         "Name": "sls-master-dev-ServerlessDeploymentBucketName"
       }
     },
-    "ChildLambdaLambdaFunctionQualifiedArn": {
+    "ResetLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ChildLambdaLambdaVersiont1mJeocIvUJBqFlaFkdjvfcDVhKsj9mGTvUddpadbIQ"
+        "Ref": "ResetLambdaVersionbnmTl16ppyZkSNFYTVR2QfUR5lQydojyidosiV1zbk"
       },
       "Export": {
-        "Name": "sls-master-dev-ChildLambdaLambdaFunctionQualifiedArn"
+        "Name": "sls-master-dev-ResetLambdaFunctionQualifiedArn"
       }
     },
     "SaleOrderProcessingActionLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "SaleOrderProcessingActionLambdaVersionKra1Eqisl4uxEJr4d8x8lUNOXBHjRwxJBzIdPyVGuc"
+        "Ref": "SaleOrderProcessingActionLambdaVersioncw51DyOzu3lXWo5fBx9md2QJ27Q1tJhxMixAXZGqM"
       },
       "Export": {
         "Name": "sls-master-dev-SaleOrderProcessingActionLambdaFunctionQualifiedArn"
@@ -1391,25 +2722,25 @@
     "ListMaterialLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ListMaterialLambdaVersionfu4YA5jkdUi7D0IqcrEuHeLETadqXQOA38PH1362ww"
+        "Ref": "ListMaterialLambdaVersionDEnhXP6avmcAqARfDKORX1BOxqwvnX82jJ8g0x0"
       },
       "Export": {
         "Name": "sls-master-dev-ListMaterialLambdaFunctionQualifiedArn"
       }
     },
-    "ReadMaterialLambdaFunctionQualifiedArn": {
+    "AvailabilityCheckLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ReadMaterialLambdaVersionvh2SiXSBQA1CNnwjqOyBAAeRHx7yuvHuAGV9yGflMYA"
+        "Ref": "AvailabilityCheckLambdaVersionZRntAOv1InhOP0bCY5IfJ1cVL0GgPW0tryjuibLcfU"
       },
       "Export": {
-        "Name": "sls-master-dev-ReadMaterialLambdaFunctionQualifiedArn"
+        "Name": "sls-master-dev-AvailabilityCheckLambdaFunctionQualifiedArn"
       }
     },
     "ListCustomerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ListCustomerLambdaVersionIGLD0U3FsGdiJMiCkO0TZPn8IvR9jhchCD1JsHUnE"
+        "Ref": "ListCustomerLambdaVersionfnDnTDEpzZIxRLc0isEPZHrFUzL1dUUR1ChzMVsbP3g"
       },
       "Export": {
         "Name": "sls-master-dev-ListCustomerLambdaFunctionQualifiedArn"
@@ -1418,16 +2749,25 @@
     "CreateMaterialLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateMaterialLambdaVersionSTW7hEc1DjfZIBf3CzpvOD1rB80HVCa6OmazSEPMoN0"
+        "Ref": "CreateMaterialLambdaVersionk9bM24lNQXDbruTlCEB6cAmPZbB5B3akJl7kVSJXo1w"
       },
       "Export": {
         "Name": "sls-master-dev-CreateMaterialLambdaFunctionQualifiedArn"
       }
     },
+    "ReadMaterialLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ReadMaterialLambdaVersionV50gZ4HAeeqSN9UzmNQC5DNrzNyo0bGql2SzsqTac"
+      },
+      "Export": {
+        "Name": "sls-master-dev-ReadMaterialLambdaFunctionQualifiedArn"
+      }
+    },
     "CreateCustomerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CreateCustomerLambdaVersionc23t1nAyrEASonRzCtm9icF6fcT2LUWASlQ8yIqI"
+        "Ref": "CreateCustomerLambdaVersion51sExz0215o3a6JxDM9SctZMjVuOa8wS0OdHgSLDjE"
       },
       "Export": {
         "Name": "sls-master-dev-CreateCustomerLambdaFunctionQualifiedArn"
@@ -1436,19 +2776,73 @@
     "ReadCustomerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ReadCustomerLambdaVersion7YCurYvoSl86JfIfT4GRRmhRSqeLb655dgg0cLwQ7w"
+        "Ref": "ReadCustomerLambdaVersionq7ym5WKecrtHwE3OacZWrX9li65OtJifdUjgyKbLQW4"
       },
       "Export": {
         "Name": "sls-master-dev-ReadCustomerLambdaFunctionQualifiedArn"
       }
     },
+    "ListSaleOrderLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListSaleOrderLambdaVersion4he3NWnD2GzJdQVv6NdgRqGp9aB3kExPstGKOV1hQY"
+      },
+      "Export": {
+        "Name": "sls-master-dev-ListSaleOrderLambdaFunctionQualifiedArn"
+      }
+    },
+    "ListAccountingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListAccountingLambdaVersion4xur0rM7pExsJlAwlvX1wqjc6of1kJWZTR24H5WMo"
+      },
+      "Export": {
+        "Name": "sls-master-dev-ListAccountingLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateCustomerInvoiceLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateCustomerInvoiceLambdaVersionbeKmrvozH2ciwmtNBxoXN48Q4ZVL6DMqf8dXEVfzSJY"
+      },
+      "Export": {
+        "Name": "sls-master-dev-CreateCustomerInvoiceLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateAccountingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateAccountingLambdaVersionj1h1Xik9zHKuB9Flfznu3ebOmGigGiO1KgqVxbqBo"
+      },
+      "Export": {
+        "Name": "sls-master-dev-CreateAccountingLambdaFunctionQualifiedArn"
+      }
+    },
     "UpdateCustomerLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "UpdateCustomerLambdaVersionjHiRq1k0kqNX3WAnqjcNnOMXtwrBhCih2o1fiGGRO8U"
+        "Ref": "UpdateCustomerLambdaVersionJddASRrJd2EgybHdRrajlYEA6LGnJKQdwLRnYgLsLc"
       },
       "Export": {
         "Name": "sls-master-dev-UpdateCustomerLambdaFunctionQualifiedArn"
+      }
+    },
+    "ReadAccountingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ReadAccountingLambdaVersionkp5CoPwff9mct7S2nvod4327VAZgxPXCq3ghTOFA4"
+      },
+      "Export": {
+        "Name": "sls-master-dev-ReadAccountingLambdaFunctionQualifiedArn"
+      }
+    },
+    "UpdateAccountingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "UpdateAccountingLambdaVersionCxZznRsbZylelCeeo8zulpjp7NL0pwzZI2NBYiA"
+      },
+      "Export": {
+        "Name": "sls-master-dev-UpdateAccountingLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {
