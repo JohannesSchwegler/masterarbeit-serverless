@@ -23,7 +23,7 @@ provider:
     LIST_TABLE: "${self:custom.list_table}"
     FUNCTION_ARN: "arn:aws:lambda::${self:provider.region}:function:${self:service}-${self:provider.stage}-readMaterial"
     snsArn:
-        Ref: SNSTopic
+      Ref: SNSTopic
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -36,20 +36,26 @@ provider:
       Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.LIST_TABLE}"
     - Effect: Allow
       Action:
-          - sns:Publish
-          - sns:CreateTopic
-      Resource: { "Fn::Join" : ["", ["arn:aws:sns:${self:provider.region}:", { "Ref" : "AWS::AccountId" }, ":${self:resources.Resources.SNSTopic.Properties.TopicName}" ] ]  }
-
-
-
-
+        - sns:Publish
+        - sns:CreateTopic
+      Resource:
+        {
+          "Fn::Join":
+            [
+              "",
+              [
+                "arn:aws:sns:${self:provider.region}:",
+                { "Ref": "AWS::AccountId" },
+                ":${self:resources.Resources.SNSTopic.Properties.TopicName}",
+              ],
+            ],
+        }
 
 useDotenv: true
 custom:
   serviceName: master
   stage: ${opt:stage, self:custom.defaultStage}
   bucket: master
-
 
   defaultStage: dev
   stages:
@@ -87,9 +93,9 @@ custom:
     debug: true
 
 functions:
-  reset: 
+  reset:
     handler: handler.restoreDefaultDataAction
-    events: 
+    events:
       - http:
           method: "post"
           path: "reset"
@@ -98,8 +104,6 @@ functions:
     events:
       - sns: create-order-topic
 
-
- 
   saleOrderProcessingAction:
     handler: "handler.saleOrderProcessingAction"
     events:
@@ -120,7 +124,7 @@ functions:
       - http:
           method: "get"
           path: "saleorder"
-  
+
   # Material Management
   listMaterial:
     handler: "handler.listMaterialAction"
@@ -141,6 +145,7 @@ functions:
       - http:
           method: "get"
           path: "material/{id}"
+  # Customer
   listCustomer:
     handler: "handler.listCustomerAction"
     events:
@@ -166,7 +171,31 @@ functions:
           method: "PUT"
           path: "customer/{id}"
 
-
+  # Accounting
+  listAccounting:
+    handler: "handler.listAccountingAction"
+    events:
+      - http:
+          method: "get"
+          path: "accounting"
+  createAccounting:
+    handler: "handler.createAccountingAction"
+    events:
+      - http:
+          method: "post"
+          path: "accounting"
+  readAccounting:
+    handler: "handler.readAccountingAction"
+    events:
+      - http:
+          method: "get"
+          path: "accounting/{id}"
+  updateAccounting:
+    handler: "handler.updateAccountingAction"
+    events:
+      - http:
+          method: "PUT"
+          path: "accounting/{id}"
 
 package:
   individually: true

@@ -1,5 +1,8 @@
 <template>
     <div class="container">
+        <Message v-if="showSuccessMessage" severity="info"
+            >Bestellung wurde aufgegeben</Message
+        >
         <div class="py-7 grid">
             <div class="col-5">
                 <h2>
@@ -38,11 +41,13 @@
 import { ref } from 'vue'
 import useCart from '../../store/Cart'
 import Product from '../../components/Product.vue'
-
+import { useToast } from 'primevue/usetoast'
 export default {
     components: { Product },
+
     setup() {
         const usernumber = ref('')
+        const showSuccessMessage = ref(false)
 
         const { cartList } = useCart
 
@@ -61,11 +66,13 @@ export default {
             })
                 .then((data) => {
                     console.log(data)
+
+                    showSuccessMessage.value = true
                 })
                 .catch((err) => console.log(err))
         }
 
-        return { usernumber, cartList, onFinishOrder }
+        return { usernumber, showSuccessMessage, cartList, onFinishOrder }
     },
 }
 </script>

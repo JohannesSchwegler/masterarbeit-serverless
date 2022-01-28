@@ -1,42 +1,25 @@
 import * as AWS from "aws-sdk";
 import { TransactWriteItemsInput } from "aws-sdk/clients/dynamodb";
-import { v4 as UUID } from "uuid";
-import databaseService from "@/shared/database.service";
 import { BusinessObject } from "src/shared/business-object.class";
 import Access from "src/interfaces/access.interface";
-
-interface CustomerDto {
+import { v4 as UUID } from "uuid";
+import databaseService from "@/shared/database.service";
+interface AccountingDto {
   id?: string;
-  name: string;
-  surname: string;
-  age: number;
-  city: string;
-  email: string;
+  customerId: string;
+  amount: number;
 }
 
-export default class Customer extends BusinessObject {
+export default class Accounting extends BusinessObject {
   private _id: string;
-  private _name: string;
-  private _surname: string;
-  private _age: number;
-  private _city: string;
-  private readonly _email: string;
+  private _customerId: string;
+  private _amount: number;
 
-  constructor({
-    id = UUID(),
-    name = "",
-    surname = "",
-    age = null,
-    city = null,
-    email = null,
-  }: CustomerDto) {
+  constructor({ id = UUID(), customerId = "", amount = 0 }: AccountingDto) {
     super();
     this._id = id;
-    this._name = name;
-    this._surname = surname;
-    this._age = age;
-    this._city = city;
-    this._email = email;
+    this._customerId = customerId;
+    this._amount = amount;
   }
 
   get id(): string {
@@ -47,13 +30,13 @@ export default class Customer extends BusinessObject {
     //  CUST#${this._id}
     // Removed id to have all customer in the same collection. Adding
     // a gsi may be a better choice in the longrun
-    return `CUST`;
+    return `ACC`;
   }
   get pk(): string {
-    return `CUST`;
+    return `ACC`;
   }
   get sk(): string {
-    return `${Customer.pk}${this._id}`;
+    return `${Accounting.pk}${this._id}`;
   }
 
   toItem(): Record<string, unknown> {
@@ -63,21 +46,18 @@ export default class Customer extends BusinessObject {
     };
   }
 
-  toDTO(): CustomerDto {
+  toDTO(): AccountingDto {
     return {
       id: this._id,
-      name: this._name,
-      surname: this._surname,
-      age: this._age,
-      city: this._city,
-      email: this._email,
+      customerId: this._customerId,
+      amount: this._amount,
     };
   }
 }
 
-class CustomerRespository implements Access<CustomerDto, number> {
-  create = async (requestData: any): Promise<CustomerDto> => {
-    const customerBusinessObject = new Customer(requestData);
+class SaleOrderRespository implements Access<AccountingDto, number> {
+  create = async (requestData: any): Promise<AccountingDto> => {
+    const accountingBusinessObject = new Accounting(requestData);
     const documentClient = new AWS.DynamoDB.DocumentClient({
       correctClockSkew: true,
     });
@@ -88,7 +68,7 @@ class CustomerRespository implements Access<CustomerDto, number> {
           Put: {
             TableName: process.env.LIST_TABLE,
             Item: {
-              ...customerBusinessObject.toItem(),
+              ...accountingBusinessObject.toItem(),
             },
           },
         },
@@ -96,13 +76,13 @@ class CustomerRespository implements Access<CustomerDto, number> {
           Update: {
             TableName: process.env.LIST_TABLE,
             Key: {
-              PK: `CUSTOMERS`,
-              SK: `CUSTOMERS`,
+              PK: `ACCOUNTINGS`,
+              SK: `ACCOUNTINGS`,
             },
             UpdateExpression: "ADD Customers :customers",
             ExpressionAttributeValues: {
               ":customers": documentClient.createSet([
-                customerBusinessObject.id,
+                accountingBusinessObject.id,
               ]),
             },
             ReturnValues: "UPDATED_NEW",
@@ -117,56 +97,56 @@ class CustomerRespository implements Access<CustomerDto, number> {
       params as unknown as TransactWriteItemsInput,
     );
 
-    return customerBusinessObject.toDTO();
+    return accountingBusinessObject.toDTO();
   };
 
-  read = async (id: number): Promise<CustomerDto> => {
+  read = async (id: number): Promise<AccountingDto> => {
     const params = {
       TableName: process.env.LIST_TABLE,
       Key: {
-        PK: Customer.pk,
-        SK: `${Customer.pk}${id}`,
+        PK: Accounting.pk,
+        SK: `${Accounting.pk}${id}`,
       },
     };
 
     const customer = await databaseService.get(params);
-    return (customer as Customer).toDTO();
+    return (customer as Accounting).toDTO();
   };
 
-  update = async (id: number): Promise<CustomerDto> => {
+  update = async (id: number): Promise<AccountingDto> => {
     const params = {
       TableName: process.env.LIST_TABLE,
       Key: {
-        PK: Customer.pk,
-        SK: `${Customer.pk}${id}`,
+        PK: Accounting.pk,
+        SK: `${Accounting.pk}${id}`,
       },
     };
 
     const customer = await databaseService.get(params);
-    return (customer as Customer).toDTO();
+    return (customer as Accounting).toDTO();
   };
 
-  delete = async (id: number): Promise<CustomerDto> => {
+  delete = async (id: number): Promise<AccountingDto> => {
     const params = {
       TableName: process.env.LIST_TABLE,
       Key: {
-        PK: Customer.pk,
-        SK: `${Customer.pk}${id}`,
+        PK: Accounting.pk,
+        SK: `${Accounting.pk}${id}`,
       },
     };
 
     const customer = await databaseService.get(params);
-    return (customer as Customer).toDTO();
+    return (customer as Accounting).toDTO();
   };
 
-  list = async (): Promise<Array<CustomerDto>> => {
+  list = async (): Promise<Array<AccountingDto>> => {
     // Initialise DynamoDB PUT parameters
     const params = {
       TableName: process.env.LIST_TABLE,
       KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :sk)",
       ExpressionAttributeValues: {
-        ":pk": Customer.pk,
-        ":sk": Customer.pk,
+        ":pk": Accounting.pk,
+        ":sk": Accounting.pk,
       },
       ExpressionAttributeNames: {
         "#pk": "PK",
@@ -176,9 +156,8 @@ class CustomerRespository implements Access<CustomerDto, number> {
     // Inserts item into DynamoDB table
     const customers = await databaseService.query(params);
     const { Items } = customers;
-    console.log("items", Items);
-    return Items as unknown as Array<CustomerDto>;
+    return Items as unknown as Array<AccountingDto>;
   };
 }
-const CUSTOMER_REPOSITORY = new CustomerRespository();
-export { CUSTOMER_REPOSITORY };
+const SALE_ORDER_REPOSITORY = new SaleOrderRespository();
+export { SALE_ORDER_REPOSITORY };

@@ -16,6 +16,14 @@ export {
 
 export { listSaleOrderAction } from "./src/deployment-units/sales/business-objects/salesorder/actions/index";
 
+export {
+  creatAccountingAction,
+  readAccountingAction,
+  updateAccountingAction,
+  deleteAccountingAction,
+  listAccountingAction,
+} from "./src/deployment-units/accounting/business-objects/accounting/actions/index";
+
 export { saleOrderProcessingAction } from "./src/deployment-units/sales/process-components/sale-order-processing/sale-order-processing.pc";
 
 export { availabilityCheckAction } from "./src/deployment-units/material-management/process-components/availability-check.pc";

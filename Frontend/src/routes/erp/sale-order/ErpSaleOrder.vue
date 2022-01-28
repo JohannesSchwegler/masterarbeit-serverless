@@ -3,9 +3,10 @@
         v-if="response.data && response.data.saleorders"
         :value="response.data.saleorders"
     >
-        <Column field="customerId" header="customerId"></Column>
-        <Column field="id" header="id"></Column>
-        <Column field="materialId" header="materialId"></Column>
+        <Column field="id" header="ID"></Column>
+        <Column field="customerId" header="Kunden ID"></Column>
+
+        <Column field="materialId" header="Material ID"></Column>
     </DataTable>
 </template>
 
