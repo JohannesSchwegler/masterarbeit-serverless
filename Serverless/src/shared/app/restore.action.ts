@@ -65,14 +65,20 @@ const createMultiple = async (data: Array<any>) => {
       },
     };
   });
+  console.log(dataToList);
   const params = {
     RequestItems: {
       [process.env.LIST_TABLE]: dataToList,
     },
   };
 
-  const accounts = await databaseService.batch_write_items(params);
-  return accounts;
+  console.log(params);
+
+  try {
+    await databaseService.batch_write_items(params);
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 const materials = [

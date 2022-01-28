@@ -50,7 +50,9 @@ import useFetch from '@/shared/composables/useFetch'
 
 export default {
     setup() {
-        const response = useFetch<any[]>('http://localhost:3000/dev/material')
+        const response = useFetch<any[]>(
+            `${import.meta.env.VITE_APP_URL}/dev/material`
+        )
 
         const products = ref(null)
         const productService = ref(new ProductService())

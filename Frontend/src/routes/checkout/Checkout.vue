@@ -54,7 +54,7 @@ export default {
         const onFinishOrder = async () => {
             console.log(cartList.value[0])
             // Default options are marked with *
-            fetch('http://localhost:3000/dev/saleOrderProcessing', {
+            fetch(`${import.meta.env.VITE_APP_URL}/dev/saleOrderProcessing`, {
                 method: 'POST', // *GET, POST, PUT, DELETE, etc.
                 headers: {
                     'Content-Type': 'application/json',
