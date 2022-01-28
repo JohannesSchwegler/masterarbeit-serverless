@@ -25,7 +25,7 @@ export default defineComponent({
     components: { ErpSection },
     setup() {
         const response = useFetch<any[]>(
-            `${import.meta.env.VITE_APP_UR}/dev/customer`
+            `${import.meta.env.VITE_APP_URL}/dev/customer`
         )
 
         return { response }
