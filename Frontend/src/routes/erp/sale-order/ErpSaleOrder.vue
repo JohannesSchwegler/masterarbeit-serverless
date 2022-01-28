@@ -18,7 +18,7 @@ import useFetch from '@/shared/composables/useFetch'
 export default defineComponent({
     components: { ErpSection },
     setup() {
-        console.log('!!! saleorder')
+        console.log('!!! saleorder', process.env.VUE_APP_URL)
         const response = useFetch<any[]>(
             `${process.env.VUE_APP_URL}/dev/saleorder`
         )
