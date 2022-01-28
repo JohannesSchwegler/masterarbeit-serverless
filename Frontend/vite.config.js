@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 import { resolve } from 'path'
@@ -6,7 +6,11 @@ import { resolve } from 'path'
 export default defineConfig({
     server: {
         port: 8000,
+        fs: {
+            strict: false,
+        },
     },
+
     resolve: {
         alias: {
             // The import of the module is relative by default,

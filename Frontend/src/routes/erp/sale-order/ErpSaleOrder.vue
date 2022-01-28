@@ -20,7 +20,7 @@ export default defineComponent({
     setup() {
         console.log('!!! saleorder', import.meta.env.VITE_APP_URL)
         const response = useFetch<any[]>(
-            `${process.env.VITE_APP_URL}/dev/saleorder`
+            `${import.meta.env.VITE_APP_URL}/dev/saleorder`
         )
 
         return { response }
