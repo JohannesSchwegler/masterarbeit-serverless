@@ -3,7 +3,6 @@ import { MATERIAL_RESPOSITORY } from "../business-objects/material/materials.bo"
 
 export const availabilityCheckHandler = async (event): Promise<any> => {
   const { id } = event;
-  console.log("availabilityCheckHandler", id);
 
   // Inserts item into DynamoDB table
   return MATERIAL_RESPOSITORY.read(id)

@@ -62,7 +62,7 @@ export default {
 
         const addProductToList = (product) => {
             addProductToShoppingList(product)
-            console.log(isCartSidebarOpen)
+
             if (!isCartSidebarOpen.value) toggleCartSidebar()
         }
 
@@ -73,9 +73,6 @@ export default {
             addProductToList,
             toggleCartSidebar,
         }
-    },
-    updated() {
-        console.log('updated shoplist')
     },
 }
 </script>

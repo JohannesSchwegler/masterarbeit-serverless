@@ -97,7 +97,6 @@ export default defineComponent({
         ])
 
         const restoreDefault = () => {
-            console.log('restore')
             axios
                 .post(`${import.meta.env.VITE_APP_URL}/dev/reset`)
                 .then(() => location.reload())

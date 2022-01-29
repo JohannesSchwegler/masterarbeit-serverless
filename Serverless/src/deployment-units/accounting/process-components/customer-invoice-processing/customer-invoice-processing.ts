@@ -9,28 +9,33 @@ const customerInvoiceProcessingHandler = async (
   const message = JSON.parse(event.Records[0].Sns.Message);
   const lambda = new AWS.Lambda({
     region: "eu-west-1",
-    endpoint: "http://localhost:3002",
   });
-
-  setTimeout(() => {
-    console.log("customerInvoiceProcessingHandler");
-    const data = JSON.stringify({
-      body: {
-        customerId: message.default.customerId,
-        amount: message.default.amount,
-      },
-    });
-    console.log(data);
-    lambda
+  console.log("parsing done");
+  await wait(5000);
+  const data = JSON.stringify({
+    body: {
+      customerId: message.default.customerId,
+      amount: message.default.amount,
+    },
+  });
+  console.log(data);
+  try {
+    const res = await lambda
       .invoke({
         InvocationType: "RequestResponse",
         FunctionName: "master-dev-createAccounting",
         Payload: data,
       })
-      .promise()
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
-  }, 5000);
+      .promise();
+    console.log(res);
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 export const customerInvoiceProcessingAction = customerInvoiceProcessingHandler;
+async function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}

@@ -52,7 +52,6 @@ export default {
         const { cartList } = useCart
 
         const onFinishOrder = async () => {
-            console.log(cartList.value[0])
             // Default options are marked with *
             fetch(`${import.meta.env.VITE_APP_URL}/dev/saleOrderProcessing`, {
                 method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -65,11 +64,9 @@ export default {
                 }), // body data type must match "Content-Type" header
             })
                 .then((data) => {
-                    console.log(data)
-
                     showSuccessMessage.value = true
                 })
-                .catch((err) => console.log(err))
+                .catch((err) => new Error(err))
         }
 
         return { usernumber, showSuccessMessage, cartList, onFinishOrder }

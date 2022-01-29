@@ -19,7 +19,6 @@ export const createCustomerHandler: APIGatewayProxyHandler = async (
 
   return validateAgainstConstraints(requestData, CreateCustomerValidator)
     .then(() => {
-      console.log("create createCustomerHandler");
       return CUSTOMER_REPOSITORY.create(requestData);
     })
     .then((customer) => {

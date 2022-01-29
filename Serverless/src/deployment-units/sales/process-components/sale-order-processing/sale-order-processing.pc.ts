@@ -20,7 +20,6 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
     .then(async () => {
       const lambda = new AWS.Lambda({
         region: "eu-west-1",
-        endpoint: "http://localhost:3002",
       });
 
       const params = {
@@ -47,7 +46,6 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
       if (isMaterialAvailable) {
         console.log("is ava!!!!!", isMaterialAvailable);
         const sns = new AWS.SNS({
-          endpoint: "http://127.0.0.1:4002",
           region: "eu-west-1",
         });
         sns.publish(
@@ -58,7 +56,7 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
                 amount: material.price,
               },
             }),
-            TopicArn: `arn:aws:sns:eu-west-1:123456789012:create-customer-invoice`,
+            TopicArn: process.env.SNS_TOPIC_ARN,
           },
           () => console.log("ping"),
         );

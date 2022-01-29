@@ -31,10 +31,3 @@ export { saleOrderProcessingAction } from "./src/deployment-units/sales/process-
 export { availabilityCheckAction } from "./src/deployment-units/material-management/process-components/availability-check.pc";
 
 export { restoreDefaultDataAction } from "./src/shared/app/restore.action";
-
-export async function pong(event, context, callback) {
-  console.log("pong");
-  console.log(JSON.stringify(event));
-  // console.log(event.Records[0].Sns.Message);
-  callback(null, { response: "return from lambda pong" });
-}

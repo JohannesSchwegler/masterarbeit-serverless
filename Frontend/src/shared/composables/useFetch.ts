@@ -14,7 +14,6 @@ type Action<T> =
     | { type: 'error'; payload: Error }
 
 function useReducer(reducer: any, initialArg: any, init?: any) {
-    console.log('initargs', initialArg)
     const state = ref(init ? init(initialArg) : initialArg)
     const dispatch = (action: any) => {
         state.value = reducer(state.value, action)
@@ -59,8 +58,6 @@ export default function useFetch<T = unknown>(
         const fetchData = async () => {
             dispatch({ type: 'loading' })
 
-            console.log(state)
-
             // If a cache exists for this url, return it
             if (cache[url]) {
                 dispatch({ type: 'fetched', payload: cache[url] })
@@ -74,7 +71,6 @@ export default function useFetch<T = unknown>(
                 }
 
                 const data = (await response.json()) as T
-                console.log(data)
 
                 cache.url = data
                 if (cancelRequest.value) return

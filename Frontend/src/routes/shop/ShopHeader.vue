@@ -99,9 +99,6 @@ export default {
             cartList,
         }
     },
-    updated() {
-        console.log('updated shop')
-    },
 }
 </script>
 

@@ -18,7 +18,6 @@ import useFetch from '@/shared/composables/useFetch'
 export default defineComponent({
     components: { ErpSection },
     setup() {
-        console.log('!!! accounting')
         const response = useFetch<any[]>(
             `${import.meta.env.VITE_APP_URL}/dev/accounting`
         )

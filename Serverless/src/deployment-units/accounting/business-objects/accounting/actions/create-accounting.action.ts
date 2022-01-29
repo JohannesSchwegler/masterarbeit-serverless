@@ -11,7 +11,6 @@ export const createAccountingHandler = async (
   event,
 ): Promise<APIGatewayProxyResult> => {
   let response;
-  console.log(event);
   const requestData = event.body;
 
   return validateAgainstConstraints(requestData, CreateAccountingValidator)

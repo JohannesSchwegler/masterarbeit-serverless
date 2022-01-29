@@ -65,14 +65,11 @@ const createMultiple = async (data: Array<any>) => {
       },
     };
   });
-  console.log(dataToList);
   const params = {
     RequestItems: {
       [process.env.LIST_TABLE]: dataToList,
     },
   };
-
-  console.log(params);
 
   try {
     await databaseService.batch_write_items(params);

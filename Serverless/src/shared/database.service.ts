@@ -46,7 +46,7 @@ const config: IConfig = { region: process.env.REGION };
 //   config.secretAccessKey = process.env.DYNAMODB_LOCAL_SECRET_ACCESS_KEY;
 //   config.endpoint = process.env.DYNAMODB_LOCAL_ENDPOINT;
 //   config.region = process.env.REGION;
-//   console.log("!!!!!", process.env.IS_OFFLINE);
+//
 //   if (process.env.IS_OFFLINE && process.env.IS_OFFLINE === "true") {
 //     config.region = "localhost";
 //   }
