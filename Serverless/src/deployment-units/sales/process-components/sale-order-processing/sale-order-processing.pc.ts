@@ -40,26 +40,26 @@ export const saleOrderProcessingHandler: APIGatewayProxyHandler = async (
       }
 
       if (!isMaterialAvailable) {
-        console.log("not!!!!!", isMaterialAvailable);
+        response = ResponseModel.setErrorOrResponse(
+          "Material is not available",
+          ResponseMessage.CREATE_SALEORDER_FAIL,
+        );
+        return response.generate();
       }
 
       if (isMaterialAvailable) {
-        console.log("is ava!!!!!", isMaterialAvailable);
         const sns = new AWS.SNS({
           region: "eu-west-1",
         });
-        sns.publish(
-          {
-            Message: JSON.stringify({
-              default: {
-                customerId: requestData.customerId,
-                amount: material.price,
-              },
-            }),
-            TopicArn: process.env.SNS_TOPIC_ARN,
-          },
-          () => console.log("ping"),
-        );
+        sns.publish({
+          Message: JSON.stringify({
+            default: {
+              customerId: requestData.customerId,
+              amount: material.price,
+            },
+          }),
+          TopicArn: process.env.SNS_TOPIC_ARN,
+        });
       }
     })
     .then(() => {

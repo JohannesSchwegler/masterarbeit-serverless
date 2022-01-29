@@ -114,6 +114,31 @@ functions:
       - http:
           method: "get"
           path: "saleorder"
+  createSaleOrder:
+    handler: "handler.createSaleOrderAction"
+    events:
+      - http:
+          method: "post"
+          path: "saleorder"
+  readSaleOrder:
+    handler: "handler.readSaleOrderAction"
+    events:
+      - http:
+          method: "get"
+          path: "saleorder/{id}"
+  updateSaleOrder:
+    handler: "handler.updateSaleOrderAction"
+    events:
+      - http:
+          method: "put"
+          path: "saleorder/{id}"
+
+  deleteSaleOrder:
+    handler: "handler.deleteSaleOrderAction"
+    events:
+      - http:
+          method: "delete"
+          path: "saleorder/{id}"
 
   # Material Management
   listMaterial:
@@ -123,7 +148,7 @@ functions:
           method: "get"
           path: "material"
   createMaterial:
-    handler: "handler.creatMaterialAction"
+    handler: "handler.createMaterialAction"
     events:
       - http:
           method: "post"

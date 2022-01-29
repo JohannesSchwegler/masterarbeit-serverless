@@ -23,7 +23,7 @@ export const readSaleOrderHandler = async (
       response = new ResponseModel(
         { material },
         StatusCode.OK,
-        ResponseMessage.GET_MATERIAL_SUCCESS,
+        ResponseMessage.GET_SALEORDER_SUCCESS,
       );
     })
     .catch((error) => {
@@ -33,7 +33,7 @@ export const readSaleOrderHandler = async (
           : new ResponseModel(
               {},
               StatusCode.ERROR,
-              ResponseMessage.GET_MATERIAL_FAIL,
+              ResponseMessage.GET_SALEORDER_FAIL,
             );
     })
     .then(() => {

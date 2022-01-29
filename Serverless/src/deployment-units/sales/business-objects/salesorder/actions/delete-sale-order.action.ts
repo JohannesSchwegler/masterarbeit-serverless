@@ -20,13 +20,13 @@ export const deleteSaleOrderHandler: APIGatewayProxyHandler = async (
       response = new ResponseModel(
         { material },
         StatusCode.OK,
-        ResponseMessage.DELETE_MATERIAL_SUCCESS,
+        ResponseMessage.DELETE_SALEORDER_SUCCESS,
       );
     })
     .catch((error) => {
       response = ResponseModel.setErrorOrResponse(
         error,
-        ResponseMessage.DELETE_MATERIAL_FAIL,
+        ResponseMessage.DELETE_SALEORDER_FAIL,
       );
     })
     .then(() => {

@@ -14,7 +14,13 @@ export {
   listMaterialAction,
 } from "./src/deployment-units/material-management/business-objects/material/actions/index";
 
-export { listSaleOrderAction } from "./src/deployment-units/sales/business-objects/salesorder/actions/index";
+export {
+  createSaleOrderAction,
+  readSaleOrderAction,
+  updateSaleOrderAction,
+  deleteSaleOrderAction,
+  listSaleOrderAction,
+} from "./src/deployment-units/sales/business-objects/salesorder/actions/index";
 
 export {
   createAccountingAction,

@@ -22,13 +22,13 @@ export const createSaleOrderHandler: APIGatewayProxyHandler = async (
       response = new ResponseModel(
         { material },
         StatusCode.OK,
-        ResponseMessage.CREATE_MATERIAL_SUCCESS,
+        ResponseMessage.CREATE_SALEORDER_SUCCESS,
       );
     })
     .catch((error) => {
       response = ResponseModel.setErrorOrResponse(
         error,
-        ResponseMessage.CREATE_MATERIAL_FAIL,
+        ResponseMessage.CREATE_SALEORDER_FAIL,
       );
     })
     .then(() => {
@@ -36,4 +36,4 @@ export const createSaleOrderHandler: APIGatewayProxyHandler = async (
     });
 };
 
-export const createSaleOrdeAction = createSaleOrderHandler;
+export const createSaleOrderAction = createSaleOrderHandler;
